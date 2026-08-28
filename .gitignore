@@ -60,3 +60,12 @@ fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
+
+# Bun and web build output
+node_modules/
+dist/
+apps/*/dist/
+.env
+.DS_Store
+*.log
+coverage/

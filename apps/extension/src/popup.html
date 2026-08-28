@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kanjiwrittr</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <span class="mark">書</span>
+        <div><strong>Kanjiwrittr</strong><small>Extension preview</small></div>
+      </header>
+      <p class="status"><span></span> Not paired with an iPad</p>
+      <label>Test insertion<textarea id="text" lang="ja" placeholder="日本語"></textarea></label>
+      <button id="insert" type="button">Insert into page</button>
+      <p id="feedback" class="feedback" aria-live="polite"></p>
+    </main>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

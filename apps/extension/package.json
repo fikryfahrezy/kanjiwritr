@@ -1,0 +1,15 @@
+{
+  "name": "@kanjiwrittr/extension",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "bun scripts/build.ts",
+    "typecheck": "tsc --pretty false"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.21",
+    "@types/chrome": "^0.1.1",
+    "typescript": "^5.9.2"
+  }
+}

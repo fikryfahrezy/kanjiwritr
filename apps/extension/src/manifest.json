@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Kanjiwrittr",
+  "version": "0.1.0",
+  "description": "Insert Japanese text from Kanjiwrittr into the current web page.",
+  "minimum_chrome_version": "116",
+  "permissions": ["activeTab", "storage"],
+  "action": {
+    "default_title": "Kanjiwrittr",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "service-worker.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content-script.js"],
+      "all_frames": true,
+      "run_at": "document_idle"
+    }
+  ]
+}

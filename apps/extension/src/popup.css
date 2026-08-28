@@ -1,0 +1,14 @@
+:root { color: #202b28; background: #f3efe6; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+body { width: 320px; margin: 0; }
+main { padding: 20px; }
+header { display: flex; align-items: center; gap: 11px; padding-bottom: 16px; border-bottom: 1px solid rgba(32, 43, 40, 0.15); }
+.mark { display: grid; width: 36px; aspect-ratio: 1; place-items: center; border-radius: 50%; color: white; background: #bd4f35; font-family: serif; }
+header strong, header small { display: block; }
+header strong { font-size: 0.78rem; }
+header small, .feedback { margin-top: 3px; color: #77817d; font-size: 0.64rem; }
+.status { margin: 16px 0; color: #68736f; font-size: 0.67rem; }
+.status span { display: inline-block; width: 7px; height: 7px; margin-right: 7px; border-radius: 50%; background: #c28a40; }
+label { display: block; font-size: 0.66rem; }
+textarea { box-sizing: border-box; width: 100%; min-height: 88px; margin-top: 8px; resize: vertical; padding: 11px; border: 1px solid rgba(32, 43, 40, 0.18); border-radius: 2px; background: #fffdf8; font: 1rem serif; }
+button { width: 100%; margin-top: 10px; padding: 11px; border: 0; border-radius: 2px; color: white; background: #1f3530; cursor: pointer; font: 0.68rem ui-monospace, monospace; }
+.feedback { min-height: 1em; margin-bottom: 0; }
