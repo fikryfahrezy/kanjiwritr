@@ -4,8 +4,6 @@ Handwrite Japanese on one device, confirm the text, and send it to the currently
 
 Milestones 1–3 provide secure device pairing, browser-to-browser delivery, a pressure-sensitive handwriting canvas, and local Japanese kanji recognition with confirmation before sending.
 
-See [TODO.md](TODO.md) for the implementation roadmap and milestone completion criteria.
-
 ## Requirements
 
 - [Bun](https://bun.sh/) 1.3.14 or newer
