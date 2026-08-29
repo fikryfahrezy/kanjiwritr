@@ -28,6 +28,7 @@
           <span>Kanjiwritr</span>
         </a>
         <nav aria-label="Main navigation">
+          <a href="#download">Get the extension</a>
           <a href="#how-it-works">How it works</a>
           <a class="nav-cta" href="/app/">Open writing pad <span aria-hidden="true">↗</span></a>
         </nav>
@@ -44,7 +45,7 @@
             </p>
             <div class="hero-actions">
               <a class="primary-action" href="/app/">Open the writing pad <span aria-hidden="true">↗</span></a>
-              <span class="coming-soon"><span class="availability-dot" aria-hidden="true"></span>Works with Chromium and Firefox receivers</span>
+              <a class="text-action" href="#download"><span class="availability-dot" aria-hidden="true"></span>Download the browser receiver <span aria-hidden="true">↓</span></a>
             </div>
             <p class="hero-note"><span aria-hidden="true">✓</span> Recognition runs locally on your writing device.</p>
           </div>
@@ -55,6 +56,62 @@
               <img src="/app-preview.png" width="1573" height="1000" alt="Kanjiwritr writing pad showing handwritten Japanese, recognition candidates, and confirmed text" fetchpriority="high" />
               <figcaption>Actual app view</figcaption>
             </figure>
+          </div>
+        </section>
+
+        <section class="extension-download" id="download" aria-labelledby="download-title">
+          <div class="section-heading extension-heading">
+            <div>
+              <p class="eyebrow" id="release-label">Browser receivers · Latest release</p>
+              <h2 id="download-title">Install the other half<br />of the handoff.</h2>
+            </div>
+            <p>Choose the browser where you want Japanese text to arrive. The extension connects that browser to the writing pad on your other device.</p>
+          </div>
+
+          <div class="browser-downloads">
+            <article class="browser-card">
+              <header class="browser-card-heading">
+                <div>
+                  <p class="browser-kicker">Chrome · Edge · Brave</p>
+                  <h3>Chromium</h3>
+                </div>
+                <span class="browser-format">ZIP</span>
+              </header>
+
+              <a class="download-action" href="https://github.com/fikryfahrezy/kanjiwritr/releases/latest" data-release-asset="kanjiwritr-chromium-" download>
+                Download for Chromium <span aria-hidden="true">↓</span>
+              </a>
+
+              <ol class="install-steps">
+                <li><span>01</span><p>Download the ZIP above, then extract it to a folder you will keep.</p></li>
+                <li><span>02</span><p>Open <code>chrome://extensions</code>. Use <code>edge://extensions</code> or <code>brave://extensions</code> in those browsers.</p></li>
+                <li><span>03</span><p>Turn on <strong>Developer mode</strong>, choose <strong>Load unpacked</strong>, and select the extracted folder.</p></li>
+                <li><span>04</span><p>Open Kanjiwritr from the extensions menu and request a pairing code.</p></li>
+              </ol>
+            </article>
+
+            <article class="browser-card">
+              <header class="browser-card-heading">
+                <div>
+                  <p class="browser-kicker">Firefox desktop</p>
+                  <h3>Firefox</h3>
+                </div>
+                <span class="browser-format">ZIP</span>
+              </header>
+
+              <a class="download-action" href="https://github.com/fikryfahrezy/kanjiwritr/releases/latest" data-release-asset="kanjiwritr-firefox-" download>
+                Download for Firefox <span aria-hidden="true">↓</span>
+              </a>
+
+              <ol class="install-steps">
+                <li><span>01</span><p>Download and extract the ZIP, then open <code>about:debugging#/runtime/this-firefox</code>.</p></li>
+                <li><span>02</span><p>Choose <strong>Load Temporary Add-on</strong> and select <code>manifest.json</code> inside the extracted folder.</p></li>
+                <li><span>03</span><p>Open Kanjiwritr from the extensions menu and request a pairing code.</p></li>
+                <li><span>04</span><p>For a permanent install, use the signed XPI when it is available on the <a href="https://github.com/fikryfahrezy/kanjiwritr/releases/latest">latest release</a>.</p></li>
+              </ol>
+
+              <p class="browser-note"><span aria-hidden="true">!</span> Unsigned temporary add-ons are removed when Firefox restarts.</p>
+            </article>
           </div>
         </section>
 
@@ -77,7 +134,7 @@
             <li>
               <span class="step-number">03</span><span class="step-kanji" aria-hidden="true">送</span>
               <h3>Send and continue</h3>
-              <p>Deliver manually or automatically to the focused field in your paired Chromium browser.</p>
+              <p>Deliver manually or automatically to the focused field in your paired Chromium or Firefox browser.</p>
             </li>
           </ol>
         </section>
@@ -106,5 +163,30 @@
         <span>Browser handwriting input · 2026</span>
       </footer>
     </div>
+    <script>
+      fetch("https://api.github.com/repos/fikryfahrezy/kanjiwritr/releases/latest", {
+        headers: { Accept: "application/vnd.github+json" },
+      })
+        .then((response) => {
+          if (!response.ok) throw new Error("Latest release was unavailable");
+          return response.json();
+        })
+        .then((release) => {
+          if (!Array.isArray(release.assets)) return;
+
+          document.querySelectorAll("[data-release-asset]").forEach((link) => {
+            const prefix = link.dataset.releaseAsset;
+            const asset = release.assets.find(({ name }) => name.startsWith(prefix) && name.endsWith(".zip"));
+            if (asset?.browser_download_url) link.href = asset.browser_download_url;
+          });
+
+          if (typeof release.tag_name === "string") {
+            document.querySelector("#release-label").textContent = `Browser receivers · ${release.tag_name}`;
+          }
+        })
+        .catch(() => {
+          // Keep the latest release page as a usable fallback.
+        });
+    </script>
   </body>
 </html>
