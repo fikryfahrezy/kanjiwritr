@@ -524,13 +524,34 @@ h2 { margin-bottom: 0; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.0
 }
 
 /* Paired writing application */
-.pairing-screen {
-  width: min(760px, 100%);
-  margin: clamp(72px, 13vh, 140px) auto 70px;
+.app-shell {
+  height: 100dvh;
+  min-height: 100dvh;
+  padding: 0;
+  overflow: hidden;
 }
 
-.pairing-screen h1 { font-size: clamp(3.1rem, 8vw, 6rem); }
-.pairing-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; max-width: 620px; margin-top: 35px; }
+.app-shell > .topbar {
+  width: 100%;
+  min-height: 60px;
+  margin: 0;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(30, 41, 38, .14);
+  background: rgba(255, 253, 248, .72);
+}
+
+.brand--mark-only { gap: 0; }
+.brand--mark-only .brand-mark { width: 40px; }
+.app-statuses { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+
+.pairing-screen {
+  width: min(620px, 100%);
+  margin: auto;
+  padding: 24px;
+}
+
+.pairing-screen h1 { margin-bottom: 20px; font-size: clamp(2rem, 7vw, 3.5rem); }
+.pairing-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; max-width: 620px; margin-top: 0; }
 .pairing-form label { grid-column: 1 / -1; color: #6d7773; font-size: .67rem; letter-spacing: .08em; text-transform: uppercase; }
 .pairing-form input {
   min-width: 0;
@@ -548,15 +569,14 @@ h2 { margin-bottom: 0; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.0
 .pairing-form .send-button { margin: 0; }
 .form-error { min-height: 1.4em; margin-top: 13px; color: #a6402d; font: .75rem/1.45 system-ui, sans-serif; }
 
-.workspace--writing { width: min(1020px, 100%); margin-top: clamp(48px, 8vh, 86px); }
-.app-intro { max-width: none; display: flex; align-items: end; justify-content: space-between; gap: 28px; }
-.app-intro h1 { margin-bottom: 0; font-size: clamp(2.9rem, 6.6vw, 5.7rem); }
-.browser-presence { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 9px; color: #7d8783; font-size: .65rem; }
+.workspace--writing { width: 100%; margin: 0; }
+.browser-presence { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px; margin: 0; padding: 9px 13px; border: 1px solid rgba(30,41,38,.14); border-radius: 999px; color: #7d8783; background: rgba(255,255,255,.4); font-size: .67rem; }
 .browser-presence span { width: 8px; height: 8px; border-radius: 50%; background: #aaa; }
 .browser-presence.is-online { color: #407d65; }
 .browser-presence.is-online span { background: #407d65; box-shadow: 0 0 0 4px rgba(64,125,101,.12); }
 
-.mode-tabs { display: inline-flex; gap: 4px; margin-bottom: 10px; padding: 4px; border: 1px solid rgba(30,41,38,.14); background: rgba(255,255,255,.34); }
+.mode-bar { display: flex; min-height: 44px; border-bottom: 1px solid rgba(30,41,38,.14); background: rgba(255,255,255,.34); }
+.mode-tabs { display: flex; gap: 0; margin: 0; padding: 0; }
 .mode-tabs button, .canvas-toolbar button, .retry-button {
   padding: 9px 12px;
   border: 0;
@@ -565,22 +585,34 @@ h2 { margin-bottom: 0; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.0
   cursor: pointer;
   font-size: .64rem;
 }
+.mode-tabs button { min-height: 44px; padding-inline: 18px; border-right: 1px solid rgba(30,41,38,.1); }
 .mode-tabs button.active, .canvas-toolbar button.active { color: #fff; background: #1f3530; }
 .mode-tabs button:focus-visible, .canvas-toolbar button:focus-visible, .candidate-group button:focus-visible, .sentence-suggestions button:focus-visible { outline: 2px solid #bd4f35; outline-offset: 2px; }
 
 .canvas-card, .typed-fallback, .recognition-card {
-  border: 1px solid rgba(30,41,38,.16);
+  border: 0;
   background: rgba(255,253,248,.82);
-  box-shadow: 0 22px 65px rgba(53,48,39,.08);
+  box-shadow: none;
 }
+.handwriting-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(280px, 3fr);
+  height: calc(100dvh - 104px);
+  align-items: stretch;
+}
+.handwriting-layout--left { grid-template-columns: minmax(280px, 3fr) minmax(0, 7fr); }
+.handwriting-layout--left .recognition-card { order: -1; border-right: 1px solid rgba(30,41,38,.16); border-left: 0; }
+.canvas-card { display: flex; min-width: 0; min-height: 0; flex-direction: column; }
 .canvas-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 11px 14px; border-bottom: 1px solid rgba(30,41,38,.12); }
 .tool-group, .history-tools { display: flex; gap: 4px; }
 .canvas-toolbar button:disabled { cursor: not-allowed; opacity: .34; }
 .history-tools button + button { border-left: 1px solid rgba(30,41,38,.12); }
 .ink-canvas {
   display: block;
+  flex: 1;
   width: 100%;
-  height: clamp(340px, 47vw, 480px);
+  height: auto;
+  min-height: 0;
   background: #fffdf8;
   cursor: crosshair;
   touch-action: none;
@@ -588,13 +620,20 @@ h2 { margin-bottom: 0; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.0
   -webkit-user-select: none;
 }
 .ink-canvas--eraser { cursor: cell; }
-.canvas-help { margin: 0; padding: 11px 15px; border-top: 1px solid rgba(30,41,38,.1); color: #87908c; font-size: .59rem; }
-.typed-fallback { display: block; padding: 20px; }
-.typed-fallback > span, .confirmation-field > span { display: block; margin-bottom: 9px; color: #6d7773; font-size: .65rem; }
+.typed-fallback { display: block; }
+.typed-fallback label { display: block; padding: 20px; }
+.typed-fallback label > span, .confirmation-field > span { display: block; margin-bottom: 9px; color: #6d7773; font-size: .65rem; }
 .typed-fallback textarea { display: block; width: 100%; min-height: 240px; resize: vertical; padding: 24px; border: 1px solid rgba(30,41,38,.16); outline: none; background: #fffdf8; font: 2rem/1.7 "Hiragino Mincho ProN", "Yu Mincho", serif; }
 
-.recognition-card { margin-top: 20px; overflow: hidden; }
+.recognition-card { min-width: 0; min-height: 0; margin-top: 0; overflow-x: hidden; overflow-y: auto; border-left: 1px solid rgba(30,41,38,.16); }
+.recognition-card .card-heading { align-items: center; padding: 12px 14px; }
+.recognition-card .recognition-heading { display: grid; min-width: 0; align-items: initial; gap: 5px; }
 .recognition-status { color: #85908b; font-size: .62rem; }
+.recognition-card .panel-side-toggle { display: flex; flex: 0 0 auto; gap: 0; border: 1px solid rgba(30,41,38,.14); }
+.panel-side-toggle button { padding: 7px 8px; border: 0; color: #6d7773; background: transparent; cursor: pointer; font-size: .57rem; }
+.panel-side-toggle button + button { border-left: 1px solid rgba(30,41,38,.14); }
+.panel-side-toggle button.active { color: #fff; background: #1f3530; }
+.panel-side-toggle button:focus-visible { position: relative; outline: 2px solid #bd4f35; outline-offset: 2px; }
 .candidate-groups { display: flex; gap: 10px; overflow-x: auto; padding: 20px 22px 6px; scrollbar-width: thin; }
 .candidate-group { flex: 0 0 auto; display: grid; grid-template-columns: repeat(5, 52px); border: 1px solid rgba(30,41,38,.14); }
 .candidate-group button { display: grid; min-height: 65px; place-items: center; padding: 5px; border: 0; border-right: 1px solid rgba(30,41,38,.1); color: #26322e; background: #fffdf8; cursor: pointer; }
@@ -608,30 +647,37 @@ h2 { margin-bottom: 0; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.0
 .confirmation-field { display: block; padding: 20px 22px; border-top: 1px solid rgba(30,41,38,.1); }
 .confirmation-field textarea { display: block; width: 100%; min-height: 105px; resize: vertical; padding: 16px 18px; border: 1px solid rgba(30,41,38,.18); outline: none; background: #fffdf8; font: 1.45rem/1.55 "Hiragino Mincho ProN", "Yu Mincho", serif; }
 .confirmation-field textarea:focus { border-color: #bd4f35; }
-.recognition-error, .model-metrics { margin: 0; padding: 0 22px 14px; color: #a6402d; font: .67rem/1.5 system-ui, sans-serif; }
-.model-metrics { color: #87908c; font-size: .58rem; }
+.recognition-error { margin: 0; padding: 0 22px 14px; color: #a6402d; font: .67rem/1.5 system-ui, sans-serif; }
+.recognition-footer { flex-wrap: wrap; justify-content: flex-end; }
+.delivery-feedback { min-width: 0; flex: 1 1 150px; margin-right: auto; overflow-wrap: anywhere; }
 .delivery-feedback--delivered { color: #407d65 !important; }
 .delivery-feedback--failed { color: #a6402d !important; }
-.delivery-actions { display: flex; align-items: center; gap: 8px; }
+.delivery-actions { display: flex; min-width: 0; align-items: center; gap: 8px; }
 .retry-button { border: 1px solid rgba(30,41,38,.22); }
 .retry-button:disabled { opacity: .4; }
-.unpair-button { display: block; margin: 24px auto 0; padding: 8px; border: 0; color: #8b6b62; background: transparent; cursor: pointer; font-size: .59rem; text-decoration: underline; text-underline-offset: 3px; }
+.unpair-button { display: block; margin: 0 8px 0 auto; padding: 8px; border: 0; color: #8b6b62; background: transparent; cursor: pointer; font-size: .59rem; text-decoration: underline; text-underline-offset: 3px; }
 
-@media (orientation: landscape) and (max-height: 900px) {
-  .workspace--writing { margin-top: 38px; }
-  .ink-canvas { height: 340px; }
+@media (max-width: 800px) {
+  .app-shell { height: auto; overflow: visible; }
+  .handwriting-layout,
+  .handwriting-layout--left { grid-template-columns: 1fr; height: auto; }
+  .canvas-card { height: calc(100dvh - 104px); }
+  .handwriting-layout--left .recognition-card { order: initial; border-right: 0; }
+  .recognition-card { border-top: 1px solid rgba(30,41,38,.16); border-left: 0; }
+  .recognition-card .panel-side-toggle { display: none; }
 }
 
 @media (max-width: 640px) {
-  .pairing-screen { margin-top: 62px; }
+  .app-shell { padding-inline: 0; }
+  .app-shell > .topbar { padding-inline: 10px; }
+  .pairing-screen { margin: auto; }
   .pairing-form { grid-template-columns: 1fr; }
   .pairing-form label { grid-column: auto; }
-  .app-intro { align-items: flex-start; flex-direction: column; }
-  .browser-presence { margin: -13px 0 0; }
+  .app-statuses { gap: 6px; }
+  .connection, .browser-presence { min-width: 31px; padding: 8px 10px; font-size: 0; }
   .canvas-toolbar { align-items: stretch; flex-direction: column; }
   .tool-group, .history-tools { justify-content: space-between; }
   .canvas-toolbar button { flex: 1; }
-  .ink-canvas { height: 430px; }
   .candidate-group { grid-template-columns: repeat(5, 46px); }
   .candidate-group button { min-height: 60px; }
   .recognition-card .card-footer { flex-direction: column; }

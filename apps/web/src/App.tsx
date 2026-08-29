@@ -14,7 +14,7 @@ const TOKEN_KEY = "kanjiwrittr.device-token";
 
 const stateLabel: Record<ConnectionState, string> = {
   connecting: "Connecting",
-  connected: "Securely connected",
+  connected: "Connected",
   reconnecting: "Reconnecting",
   disconnected: "Offline",
 };
@@ -33,7 +33,7 @@ export function App() {
   const [pairingBusy, setPairingBusy] = createSignal(false);
   const [connection, setConnection] = createSignal<ConnectionState>("disconnected");
   const [extensionOnline, setExtensionOnline] = createSignal(false);
-  const [feedback, setFeedback] = createSignal("Write one character in each square. Recognition stays on this device.");
+  const [feedback, setFeedback] = createSignal("");
   const [tool, setTool] = createSignal<WritingTool>("pen");
   const [strokes, setStrokes] = createSignal<InkStroke[]>([]);
   const [undoStack, setUndoStack] = createSignal<InkStroke[][]>([]);
@@ -44,6 +44,7 @@ export function App() {
   const [recognizing, setRecognizing] = createSignal(false);
   const [confirmedText, setConfirmedText] = createSignal("");
   const [inputMode, setInputMode] = createSignal<"write" | "type">("write");
+  const [confirmationSide, setConfirmationSide] = createSignal<"left" | "right">("right");
   const [deliveryState, setDeliveryState] = createSignal<"idle" | "sending" | "delivered" | "failed">("idle");
   const [pendingDelivery, setPendingDelivery] = createSignal<{ messageId: string; text: string }>();
   let socket: WebSocket | undefined;
@@ -276,89 +277,100 @@ export function App() {
     }
   }
 
+  const DeliveryControls = () => (
+    <div class="card-footer recognition-footer">
+      <Show when={feedback()}><p class={`delivery-feedback delivery-feedback--${deliveryState()}`} aria-live="polite">{feedback()}</p></Show>
+      <div class="delivery-actions">
+        <Show when={deliveryState() === "failed"}><button class="retry-button" type="button" onClick={() => sendText(true)} disabled={!extensionOnline()}>Retry</button></Show>
+        <button class="send-button" type="button" disabled={!confirmedText().trim() || connection() !== "connected" || !extensionOnline() || deliveryState() === "sending"} onClick={() => sendText(false)}>{deliveryState() === "sending" ? "Sending…" : deliveryState() === "delivered" ? "Send again" : "Send to receiver"}<span aria-hidden="true">↗</span></button>
+      </div>
+    </div>
+  );
+
   return (
     <main class="app-shell">
       <header class="topbar">
-        <a class="brand" href="/" aria-label="Kanjiwrittr home"><span class="brand-mark" aria-hidden="true">書</span><span>Kanjiwrittr</span></a>
-        <Show when={token()}><div class={`connection connection--${connection()}`} role="status"><span class="connection-dot" aria-hidden="true" />{stateLabel[connection()]}</div></Show>
+        <a class="brand brand--mark-only" href="/" aria-label="Kanjiwrittr home"><span class="brand-mark" aria-hidden="true">書</span></a>
+        <Show when={token()}>
+          <div class="app-statuses" aria-label="Device status">
+            <div class={`connection connection--${connection()}`} role="status"><span class="connection-dot" aria-hidden="true" />{stateLabel[connection()]}</div>
+            <div class={`browser-presence ${extensionOnline() ? "is-online" : ""}`} role="status"><span aria-hidden="true" />{extensionOnline() ? "Receiver ready" : "Receiver offline"}</div>
+          </div>
+        </Show>
       </header>
 
       <Show when={token()} fallback={
         <section class="pairing-screen" aria-labelledby="pairing-title">
-          <p class="eyebrow">Secure device pairing</p>
-          <h1 id="pairing-title">Connect your<br /><em>browser extension.</em></h1>
-          <p class="lede">Open the Kanjiwrittr extension on the receiving device, choose “Pair a writing device,” then enter its single-use code here.</p>
+          <h1 id="pairing-title">Pair device</h1>
           <form class="pairing-form" onSubmit={claimPairing}>
-            <label for="pairing-code">Pairing code</label>
+            <label class="sr-only" for="pairing-code">Pairing code</label>
             <input id="pairing-code" value={pairingCode()} onInput={(event) => setPairingCode(event.currentTarget.value)} inputmode="text" autocomplete="one-time-code" maxlength="9" placeholder="ABCD EFGH" autofocus />
-            <button class="send-button" type="submit" disabled={pairingBusy()}>{pairingBusy() ? "Pairing…" : "Pair devices"}<span aria-hidden="true">↗</span></button>
+            <button class="send-button" type="submit" disabled={pairingBusy()}>{pairingBusy() ? "Pairing…" : "Pair"}<span aria-hidden="true">↗</span></button>
           </form>
           <p class="form-error" role="alert">{pairingError()}</p>
         </section>
       }>
-        <section class="workspace workspace--writing" aria-labelledby="page-title">
-          <div class="intro app-intro">
-            <div><p class="eyebrow">Your writing desk</p><h1 id="page-title">Write. Confirm.<br /><em>Send to your browser.</em></h1></div>
-            <div class={`browser-presence ${extensionOnline() ? "is-online" : ""}`}><span aria-hidden="true" />{extensionOnline() ? "Browser ready" : "Browser offline"}</div>
-          </div>
-
-          <div class="mode-tabs" role="tablist" aria-label="Input method">
-            <button classList={{ active: inputMode() === "write" }} onClick={() => setInputMode("write")} type="button" role="tab" aria-selected={inputMode() === "write"}>Handwrite</button>
-            <button classList={{ active: inputMode() === "type" }} onClick={() => setInputMode("type")} type="button" role="tab" aria-selected={inputMode() === "type"}>Type instead</button>
+        <section class="workspace workspace--writing" aria-label="Writing pad">
+          <div class="mode-bar">
+            <div class="mode-tabs" role="tablist" aria-label="Input method">
+              <button classList={{ active: inputMode() === "write" }} onClick={() => setInputMode("write")} type="button" role="tab" aria-selected={inputMode() === "write"}>Handwrite</button>
+              <button classList={{ active: inputMode() === "type" }} onClick={() => setInputMode("type")} type="button" role="tab" aria-selected={inputMode() === "type"}>Type</button>
+            </div>
+            <button class="unpair-button" type="button" onClick={() => void unpair()}>Unpair devices</button>
           </div>
 
           <Show when={inputMode() === "write"} fallback={
-            <label class="typed-fallback"><span>Japanese text</span><textarea value={confirmedText()} onInput={(event) => setConfirmedText(event.currentTarget.value)} lang="ja" placeholder="ここに日本語を入力してください…" /></label>
+            <section class="typed-fallback">
+              <label><span>Japanese text</span><textarea value={confirmedText()} onInput={(event) => setConfirmedText(event.currentTarget.value)} lang="ja" placeholder="ここに日本語を入力してください…" /></label>
+              <DeliveryControls />
+            </section>
           }>
-            <div class="canvas-card">
-              <div class="canvas-toolbar">
-                <div class="tool-group" aria-label="Writing tools">
-                  <button classList={{ active: tool() === "pen" }} onClick={() => setTool("pen")} type="button" aria-pressed={tool() === "pen"}>Pen</button>
-                  <button classList={{ active: tool() === "eraser" }} onClick={() => setTool("eraser")} type="button" aria-pressed={tool() === "eraser"}>Eraser</button>
+            <div class={`handwriting-layout handwriting-layout--${confirmationSide()}`}>
+              <div class="canvas-card">
+                <div class="canvas-toolbar">
+                  <div class="tool-group" aria-label="Writing tools">
+                    <button classList={{ active: tool() === "pen" }} onClick={() => setTool("pen")} type="button" aria-pressed={tool() === "pen"}>Pen</button>
+                    <button classList={{ active: tool() === "eraser" }} onClick={() => setTool("eraser")} type="button" aria-pressed={tool() === "eraser"}>Eraser</button>
+                  </div>
+                  <div class="history-tools">
+                    <button onClick={undo} disabled={undoStack().length === 0} type="button">Undo</button>
+                    <button onClick={redo} disabled={redoStack().length === 0} type="button">Redo</button>
+                    <button onClick={clearCanvas} disabled={strokes().length === 0} type="button">Clear</button>
+                  </div>
                 </div>
-                <div class="history-tools">
-                  <button onClick={undo} disabled={undoStack().length === 0} type="button">Undo</button>
-                  <button onClick={redo} disabled={redoStack().length === 0} type="button">Redo</button>
-                  <button onClick={clearCanvas} disabled={strokes().length === 0} type="button">Clear</button>
-                </div>
+                <WritingCanvas strokes={strokes()} tool={tool()} onCommit={commitStrokes} onSize={(width, height) => setCanvasSize({ width, height })} />
               </div>
-              <WritingCanvas strokes={strokes()} tool={tool()} onCommit={commitStrokes} onSize={(width, height) => setCanvasSize({ width, height })} />
-              <p class="canvas-help">Stylus, touch, or mouse · one character per square · multiple lines supported</p>
+
+              <section class="recognition-card" aria-labelledby="recognition-title">
+                <div class="card-heading">
+                  <div class="recognition-heading">
+                    <h2 id="recognition-title">Confirm recognized text</h2>
+                    <span class="recognition-status">{recognizing() ? "Recognizing locally…" : recognition() ? `${recognition()!.groups.length} groups` : "Waiting for ink"}</span>
+                  </div>
+                  <div class="panel-side-toggle" role="group" aria-label="Confirmation panel position">
+                    <button classList={{ active: confirmationSide() === "left" }} type="button" aria-pressed={confirmationSide() === "left"} onClick={() => setConfirmationSide("left")}>Left</button>
+                    <button classList={{ active: confirmationSide() === "right" }} type="button" aria-pressed={confirmationSide() === "right"} onClick={() => setConfirmationSide("right")}>Right</button>
+                  </div>
+                </div>
+
+                <Show when={recognition()?.groups.length}>
+                  <div class="candidate-groups">
+                    <For each={recognition()?.groups}>{(group, groupIndex) => <div class="candidate-group" aria-label={`Alternatives for character ${groupIndex() + 1}`}>
+                      <For each={group.candidates}>{(candidate, candidateIndex) => <button classList={{ selected: [...confirmedText()][groupIndex()] === candidate.character || (!confirmedText() && candidateIndex() === 0) }} type="button" onClick={() => chooseCharacter(groupIndex(), candidate.character)} title={`${Math.round(candidate.confidence * 100)}% confidence`}><span>{candidate.character}</span><small>{Math.round(candidate.confidence * 100)}%</small></button>}</For>
+                    </div>}</For>
+                  </div>
+                  <div class="sentence-suggestions"><span>Sentence suggestions</span><For each={recognition()?.suggestions}>{(suggestion) => <button type="button" onClick={() => setConfirmedText(suggestion.text)}>{suggestion.text}<small>{Math.round(suggestion.confidence * 100)}%</small></button>}</For></div>
+                </Show>
+
+                <label class="confirmation-field"><span>Confirmed text — edit before sending</span><textarea value={confirmedText()} onInput={(event) => setConfirmedText(event.currentTarget.value)} lang="ja" placeholder="Recognized text appears here. You can always type a correction." /></label>
+                <Show when={recognitionError()}><p class="recognition-error" role="alert">{recognitionError()} Use “Type instead” while local recognition is unavailable.</p></Show>
+                <DeliveryControls />
+              </section>
             </div>
           </Show>
 
-          <section class="recognition-card" aria-labelledby="recognition-title">
-            <div class="card-heading">
-              <div><span class="step-number">02</span><h2 id="recognition-title">Confirm recognized text</h2></div>
-              <span class="recognition-status">{recognizing() ? "Recognizing locally…" : recognition() ? `${recognition()!.groups.length} groups` : "Waiting for ink"}</span>
-            </div>
-
-            <Show when={recognition()?.groups.length}>
-              <div class="candidate-groups">
-                <For each={recognition()?.groups}>{(group, groupIndex) => <div class="candidate-group" aria-label={`Alternatives for character ${groupIndex() + 1}`}>
-                  <For each={group.candidates}>{(candidate, candidateIndex) => <button classList={{ selected: [...confirmedText()][groupIndex()] === candidate.character || (!confirmedText() && candidateIndex() === 0) }} type="button" onClick={() => chooseCharacter(groupIndex(), candidate.character)} title={`${Math.round(candidate.confidence * 100)}% confidence`}><span>{candidate.character}</span><small>{Math.round(candidate.confidence * 100)}%</small></button>}</For>
-                </div>}</For>
-              </div>
-              <div class="sentence-suggestions"><span>Sentence suggestions</span><For each={recognition()?.suggestions}>{(suggestion) => <button type="button" onClick={() => setConfirmedText(suggestion.text)}>{suggestion.text}<small>{Math.round(suggestion.confidence * 100)}%</small></button>}</For></div>
-            </Show>
-
-            <label class="confirmation-field"><span>Confirmed text — edit before sending</span><textarea value={confirmedText()} onInput={(event) => setConfirmedText(event.currentTarget.value)} lang="ja" placeholder="Recognized text appears here. You can always type a correction." /></label>
-            <Show when={recognitionError()}><p class="recognition-error" role="alert">{recognitionError()} Use “Type instead” while local recognition is unavailable.</p></Show>
-            <Show when={recognition()?.metrics}>{(metrics) => <p class="model-metrics">Local model {(metrics().modelBytes / 1_048_576).toFixed(1)} MB · latest inference {Math.round(metrics().inferenceMs)} ms · estimated working assets {(metrics().estimatedWorkingBytes / 1_048_576).toFixed(1)} MB</p>}</Show>
-            <div class="card-footer">
-              <p class={`delivery-feedback delivery-feedback--${deliveryState()}`} aria-live="polite">{feedback()}</p>
-              <div class="delivery-actions">
-                <Show when={deliveryState() === "failed"}><button class="retry-button" type="button" onClick={() => sendText(true)} disabled={!extensionOnline()}>Retry</button></Show>
-                <button class="send-button" type="button" disabled={!confirmedText().trim() || connection() !== "connected" || !extensionOnline() || deliveryState() === "sending"} onClick={() => sendText(false)}>{deliveryState() === "sending" ? "Sending…" : deliveryState() === "delivered" ? "Send again" : "Send to browser"}<span aria-hidden="true">↗</span></button>
-              </div>
-            </div>
-          </section>
-
-          <button class="unpair-button" type="button" onClick={() => void unpair()}>Unpair devices</button>
         </section>
       </Show>
-
-      <footer class="page-footer"><span>Private by design</span><span class="footer-line" aria-hidden="true" /><span>Raw strokes and recognition stay on this device</span></footer>
     </main>
   );
 }
