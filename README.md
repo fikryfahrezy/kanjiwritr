@@ -60,6 +60,10 @@ Then open `http://localhost:3000` or check `http://localhost:3000/healthz`.
 
 ## Browser receiver extensions
 
+Download packaged builds from the
+[latest GitHub Release](https://github.com/fikryfahrezy/kanjiwritr/releases/latest),
+or build them locally as described below.
+
 After `bun run build`, the browser-specific extensions are available under
 `apps/extension/dist`.
 
