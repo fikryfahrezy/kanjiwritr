@@ -31,6 +31,23 @@ describe("protocol parsing", () => {
   });
 
   test("accepts presence, delivery, and result server messages", () => {
+    expect(parseServerMessage({
+      type: "connection.ready",
+      connectionId: "connection-1",
+      role: "writer",
+      paired: true,
+    })).toEqual({
+      type: "connection.ready",
+      connectionId: "connection-1",
+      role: "writer",
+      paired: true,
+    });
+    expect(parseServerMessage({
+      type: "connection.ready",
+      connectionId: "connection-1",
+      role: "ipad",
+      paired: true,
+    })).toBeUndefined();
     expect(parseServerMessage('{"type":"presence.changed","extensionOnline":true}'))
       .toEqual({ type: "presence.changed", extensionOnline: true });
     expect(parseServerMessage({ type: "text.delivery", messageId: "m1", text: "語" }))

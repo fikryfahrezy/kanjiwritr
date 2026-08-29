@@ -46,7 +46,7 @@ export class PairingStore {
       CREATE TABLE IF NOT EXISTS devices (
         id TEXT PRIMARY KEY,
         pairing_id TEXT NOT NULL REFERENCES pairings(id) ON DELETE CASCADE,
-        role TEXT NOT NULL CHECK(role IN ('ipad', 'extension')),
+        role TEXT NOT NULL CHECK(role IN ('writer', 'extension')),
         token_hash TEXT NOT NULL UNIQUE,
         created_at INTEGER NOT NULL,
         last_seen_at INTEGER,
@@ -56,6 +56,7 @@ export class PairingStore {
       CREATE INDEX IF NOT EXISTS devices_pairing_index ON devices(pairing_id);
       CREATE INDEX IF NOT EXISTS pairings_expiry_index ON pairings(expires_at);
     `);
+    this.migrateLegacyWriterRole();
   }
 
   createPairing(): PairingRequestResponse {
@@ -102,7 +103,7 @@ export class PairingStore {
         );
         if (updated.changes !== 1) throw new Error("Pairing code was already used");
         this.database.run(
-          "INSERT INTO devices (id, pairing_id, role, token_hash, created_at) VALUES (?, ?, 'ipad', ?, ?)",
+          "INSERT INTO devices (id, pairing_id, role, token_hash, created_at) VALUES (?, ?, 'writer', ?, ?)",
           [crypto.randomUUID(), pairing.id, tokenHash(token), now],
         );
       })();
@@ -149,6 +150,40 @@ export class PairingStore {
 
   private codeHash(code: string): string {
     return createHmac("sha256", this.credentialSecret).update(code).digest("hex");
+  }
+
+  private migrateLegacyWriterRole(): void {
+    const table = this.database.query<{ sql: string | null }, []>(
+      "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'devices'",
+    ).get();
+    if (!table?.sql?.includes("'ipad'")) return;
+
+    this.database.run("PRAGMA foreign_keys = OFF");
+    try {
+      this.database.transaction(() => {
+        this.database.exec(`
+          ALTER TABLE devices RENAME TO devices_legacy_writer_role;
+          CREATE TABLE devices (
+            id TEXT PRIMARY KEY,
+            pairing_id TEXT NOT NULL REFERENCES pairings(id) ON DELETE CASCADE,
+            role TEXT NOT NULL CHECK(role IN ('writer', 'extension')),
+            token_hash TEXT NOT NULL UNIQUE,
+            created_at INTEGER NOT NULL,
+            last_seen_at INTEGER,
+            revoked_at INTEGER,
+            UNIQUE(pairing_id, role)
+          );
+          INSERT INTO devices (id, pairing_id, role, token_hash, created_at, last_seen_at, revoked_at)
+          SELECT id, pairing_id, CASE role WHEN 'ipad' THEN 'writer' ELSE role END,
+                 token_hash, created_at, last_seen_at, revoked_at
+          FROM devices_legacy_writer_role;
+          DROP TABLE devices_legacy_writer_role;
+          CREATE INDEX devices_pairing_index ON devices(pairing_id);
+        `);
+      })();
+    } finally {
+      this.database.run("PRAGMA foreign_keys = ON");
+    }
   }
 }
 

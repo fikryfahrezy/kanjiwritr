@@ -1,4 +1,4 @@
-export type DeviceRole = "ipad" | "extension";
+export type DeviceRole = "writer" | "extension";
 export type ConnectionState = "connecting" | "connected" | "reconnecting" | "disconnected";
 
 export type DeliveryError = "no_focused_field" | "page_restricted" | "peer_offline" | "delivery_timeout";
@@ -115,7 +115,7 @@ export function parseServerMessage(value: unknown): ServerMessage | undefined {
 }
 
 export function isDeviceRole(value: unknown): value is DeviceRole {
-  return value === "ipad" || value === "extension";
+  return value === "writer" || value === "extension";
 }
 
 function validId(value: unknown): value is string {

@@ -2,9 +2,10 @@
 
 Kanjiwrittr uses the **DaKanji Single Kanji Recognition v2.0** classifier for
 milestone 3. The self-hosted model accepts a 96×96 grayscale character image
-and returns probabilities for 6,000+ kanji. It is small enough for an iPad web
-app, runs with ONNX Runtime Web's single-threaded WASM backend, and does not
-need WebGL, cross-origin isolation, or a recognition service.
+and returns probabilities for 6,000+ kanji. It is small enough for a
+browser-based writing app, runs with ONNX Runtime Web's single-threaded WASM
+backend, and does not need WebGL, cross-origin isolation, or a recognition
+service.
 
 The model is distributed under the MIT license. Its required license text is
 kept beside the model at `apps/web/public/models/dakanji/LICENSE.txt`. The
@@ -38,6 +39,6 @@ cached even before the service worker controls the page.
 The UI reports the exact model download size, model/session load duration,
 latest total inference latency, and an estimated working-asset footprint
 (model + WASM runtime + input tensors). Repository asset sizes are approximately
-2.1 MiB for the model and 10.7 MiB for WASM. Physical-iPad release checks should
-record cold/warm latency and Safari Web Inspector's process-memory value; browser
-JavaScript cannot read Safari's real process memory directly.
+2.1 MiB for the model and 10.7 MiB for WASM. Release checks on representative
+devices and browsers should record cold/warm latency and, where available,
+process-memory values; browser JavaScript cannot read real process memory directly.

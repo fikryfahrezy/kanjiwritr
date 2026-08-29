@@ -24,7 +24,7 @@ describe("PairingStore", () => {
     expect(claimed?.token).not.toBe(requested.token);
     expect(store.claimPairing(requested.code)).toBeUndefined();
     expect(store.authenticate(requested.token)?.role).toBe("extension");
-    expect(store.authenticate(claimed!.token)?.role).toBe("ipad");
+    expect(store.authenticate(claimed!.token)?.role).toBe("writer");
 
     const database = new Database(path, { readonly: true });
     const serializedRows = JSON.stringify(database.query("SELECT * FROM pairings JOIN devices ON pairings.id = devices.pairing_id").all());
@@ -61,6 +61,42 @@ describe("PairingStore", () => {
     database.close();
 
     expect(store.claimPairing(requested.code)).toBeUndefined();
+    store.close();
+  });
+
+  test("renames the legacy writing-device role", () => {
+    const directory = mkdtempSync(join(tmpdir(), "kanjiwrittr-store-"));
+    directories.push(directory);
+    const path = join(directory, "pairing.sqlite");
+    const database = new Database(path);
+    database.exec(`
+      CREATE TABLE pairings (
+        id TEXT PRIMARY KEY,
+        code_hash TEXT NOT NULL UNIQUE,
+        created_at INTEGER NOT NULL,
+        expires_at INTEGER NOT NULL,
+        claimed_at INTEGER,
+        revoked_at INTEGER
+      );
+      CREATE TABLE devices (
+        id TEXT PRIMARY KEY,
+        pairing_id TEXT NOT NULL REFERENCES pairings(id) ON DELETE CASCADE,
+        role TEXT NOT NULL CHECK(role IN ('ipad', 'extension')),
+        token_hash TEXT NOT NULL UNIQUE,
+        created_at INTEGER NOT NULL,
+        last_seen_at INTEGER,
+        revoked_at INTEGER,
+        UNIQUE(pairing_id, role)
+      );
+      CREATE INDEX devices_pairing_index ON devices(pairing_id);
+    `);
+    database.close();
+
+    const store = new PairingStore(path, "test-only-secret");
+    const requested = store.createPairing();
+    const claimed = store.claimPairing(requested.code)!;
+
+    expect(store.authenticate(claimed.token)?.role).toBe("writer");
     store.close();
   });
 });

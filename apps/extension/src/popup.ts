@@ -53,14 +53,14 @@ function render(state: ExtensionState): void {
       || state.connectionState === "error"
       || (state.connectionState === "waiting" && !state.pairingCode);
     pair.hidden = !canRequestCode;
-    pair.textContent = state.connectionState === "waiting" ? "Generate a new code" : "Pair a new iPad";
+    pair.textContent = state.connectionState === "waiting" ? "Generate a new code" : "Pair a writing device";
   }
   if (unpair) unpair.hidden = !state.token;
   if (feedback) feedback.textContent = state.lastError ?? "";
   if (!statusElement) return;
   const labels: Record<ExtensionState["connectionState"], string> = {
     "not-paired": "Not paired",
-    waiting: "Waiting for iPad",
+    waiting: "Waiting for writing device",
     connecting: "Connecting securely…",
     online: "Paired and online",
     reconnecting: "Paired · reconnecting…",

@@ -397,14 +397,14 @@ h2 { margin-bottom: 0; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.0
   background: #e5d8c1;
   opacity: 0.72;
 }
-.ipad-preview, .mac-preview {
+.writing-preview, .receiver-preview {
   position: absolute;
   border: 1px solid rgba(29, 41, 37, 0.22);
   background: rgba(253, 250, 243, 0.96);
   box-shadow: 0 30px 70px rgba(42, 42, 35, 0.14);
 }
-.ipad-preview { z-index: 2; top: 15px; left: 0; width: min(500px, 80%); transform: rotate(-2deg); }
-.device-topline, .mac-menubar {
+.writing-preview { z-index: 2; top: 15px; left: 0; width: min(500px, 80%); transform: rotate(-2deg); }
+.device-topline, .browser-toolbar {
   min-height: 39px;
   display: flex;
   align-items: center;
@@ -440,15 +440,15 @@ h2 { margin-bottom: 0; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.0
 .match-label { grid-row: 1 / 3; color: #919792; font-size: 0.5rem; writing-mode: vertical-rl; letter-spacing: 0.08em; text-transform: uppercase; }
 .match { overflow: hidden; padding: 10px 12px; border: 1px solid var(--landing-line); color: #6d7773; font-family: "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 0.78rem; text-overflow: ellipsis; white-space: nowrap; }
 .match.selected { border-color: var(--landing-red); color: var(--landing-ink); background: rgba(185, 78, 53, 0.05); }
-.mac-preview { z-index: 3; right: 0; bottom: 12px; width: min(405px, 68%); }
-.mac-menubar { color: #b0afa6; }
-.mac-menubar span:last-child { display: grid; width: 22px; aspect-ratio: 1; place-items: center; border-radius: 50%; color: white; background: var(--landing-red); font-family: serif; }
-.mac-window { padding: 20px 22px 25px; }
+.receiver-preview { z-index: 3; right: 0; bottom: 12px; width: min(405px, 68%); }
+.browser-toolbar { color: #b0afa6; }
+.browser-toolbar span:last-child { display: grid; width: 22px; aspect-ratio: 1; place-items: center; border-radius: 50%; color: white; background: var(--landing-red); font-family: serif; }
+.browser-window { padding: 20px 22px 25px; }
 .window-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; font-size: 0.64rem; }
 .live-label { color: #3d745c; font-size: 0.48rem; letter-spacing: 0.13em; }
 .text-field { min-height: 62px; padding: 17px 15px; border: 1px solid var(--landing-ink); font-family: "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 0.91rem; background: white; }
 .caret { display: inline-block; height: 1.15em; margin-left: 2px; border-left: 1px solid var(--landing-red); vertical-align: -0.2em; animation: blink 1.2s step-end infinite; }
-.mac-window p { margin: 10px 0 0; color: #999e9a; font-size: 0.5rem; }
+.browser-window p { margin: 10px 0 0; color: #999e9a; font-size: 0.5rem; }
 .transfer-pill { position: absolute; z-index: 4; top: 52%; left: 44%; display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; color: white; background: var(--landing-red); box-shadow: 0 8px 20px rgba(143, 57, 37, 0.25); font-family: serif; font-size: 0.76rem; transform: rotate(-2deg); }
 .transfer-line { width: 24px; border-top: 1px solid rgba(255, 255, 255, 0.55); }
 
@@ -503,10 +503,10 @@ h2 { margin-bottom: 0; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.0
   .landing-hero h1 { font-size: clamp(3.25rem, 16vw, 5.5rem); }
   .hero-lede { font-size: 0.96rem; }
   .product-scene { min-height: 475px; }
-  .ipad-preview { width: 90%; }
+  .writing-preview { width: 90%; }
   .paper-grid { min-height: 180px; }
   .paper-grid p { font-size: clamp(1.13rem, 5.6vw, 1.65rem); }
-  .mac-preview { width: 76%; }
+  .receiver-preview { width: 76%; }
   .transfer-pill { top: 56%; left: 34%; }
   .process { padding: 80px 0; }
   .section-heading { display: block; margin-bottom: 38px; }
@@ -551,10 +551,10 @@ h2 { margin-bottom: 0; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.0
 .workspace--writing { width: min(1020px, 100%); margin-top: clamp(48px, 8vh, 86px); }
 .app-intro { max-width: none; display: flex; align-items: end; justify-content: space-between; gap: 28px; }
 .app-intro h1 { margin-bottom: 0; font-size: clamp(2.9rem, 6.6vw, 5.7rem); }
-.mac-presence { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 9px; color: #7d8783; font-size: .65rem; }
-.mac-presence span { width: 8px; height: 8px; border-radius: 50%; background: #aaa; }
-.mac-presence.is-online { color: #407d65; }
-.mac-presence.is-online span { background: #407d65; box-shadow: 0 0 0 4px rgba(64,125,101,.12); }
+.browser-presence { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 9px; color: #7d8783; font-size: .65rem; }
+.browser-presence span { width: 8px; height: 8px; border-radius: 50%; background: #aaa; }
+.browser-presence.is-online { color: #407d65; }
+.browser-presence.is-online span { background: #407d65; box-shadow: 0 0 0 4px rgba(64,125,101,.12); }
 
 .mode-tabs { display: inline-flex; gap: 4px; margin-bottom: 10px; padding: 4px; border: 1px solid rgba(30,41,38,.14); background: rgba(255,255,255,.34); }
 .mode-tabs button, .canvas-toolbar button, .retry-button {
@@ -627,7 +627,7 @@ h2 { margin-bottom: 0; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.0
   .pairing-form { grid-template-columns: 1fr; }
   .pairing-form label { grid-column: auto; }
   .app-intro { align-items: flex-start; flex-direction: column; }
-  .mac-presence { margin: -13px 0 0; }
+  .browser-presence { margin: -13px 0 0; }
   .canvas-toolbar { align-items: stretch; flex-direction: column; }
   .tool-group, .history-tools { justify-content: space-between; }
   .canvas-toolbar button { flex: 1; }

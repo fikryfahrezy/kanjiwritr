@@ -33,7 +33,7 @@ export function App() {
   const [pairingBusy, setPairingBusy] = createSignal(false);
   const [connection, setConnection] = createSignal<ConnectionState>("disconnected");
   const [extensionOnline, setExtensionOnline] = createSignal(false);
-  const [feedback, setFeedback] = createSignal("Write one character in each square. Recognition stays on this iPad.");
+  const [feedback, setFeedback] = createSignal("Write one character in each square. Recognition stays on this device.");
   const [tool, setTool] = createSignal<WritingTool>("pen");
   const [strokes, setStrokes] = createSignal<InkStroke[]>([]);
   const [undoStack, setUndoStack] = createSignal<InkStroke[][]>([]);
@@ -139,7 +139,7 @@ export function App() {
       if (message.type === "connection.ready") setConnection("connected");
       if (message.type === "presence.changed") {
         setExtensionOnline(message.extensionOnline);
-        if (!message.extensionOnline) setFeedback("Your Mac extension is offline. Writing and local recognition still work.");
+        if (!message.extensionOnline) setFeedback("Your paired browser is offline. Writing and local recognition still work.");
       }
       if (message.type === "delivery.result") handleDeliveryResult(message.messageId, message.delivered, message.error);
     });
@@ -161,7 +161,7 @@ export function App() {
     event.preventDefault();
     const code = pairingCode().toUpperCase().replace(/[^A-Z0-9]/g, "");
     if (code.length !== 8) {
-      setPairingError("Enter the eight-character code shown by the Mac extension.");
+      setPairingError("Enter the eight-character code shown by the browser extension.");
       return;
     }
     setPairingBusy(true);
@@ -178,7 +178,7 @@ export function App() {
       }
       localStorage.setItem(TOKEN_KEY, body.token);
       setToken(body.token);
-      setFeedback("Paired. Waiting for your Mac extension to come online…");
+      setFeedback("Paired. Waiting for the receiving browser to come online…");
       connect();
     } catch (cause) {
       setPairingError(cause instanceof Error ? cause.message : "Pairing failed.");
@@ -263,14 +263,14 @@ export function App() {
     if (pendingDelivery()?.messageId !== messageId) return;
     if (delivered) {
       setDeliveryState("delivered");
-      setFeedback("Delivered into the focused field on your Mac.");
+      setFeedback("Delivered into the focused field in your paired browser.");
     } else {
       setDeliveryState("failed");
       const labels: Record<DeliveryError, string> = {
-        no_focused_field: "Focus an input, textarea, or editable area on your Mac, then retry.",
+        no_focused_field: "Focus an input, textarea, or editable area in your paired browser, then retry.",
         page_restricted: "This browser page blocks extension insertion. Open a regular webpage and retry.",
-        peer_offline: "Your Mac extension is offline. Reconnect it and retry.",
-        delivery_timeout: "Your Mac did not acknowledge delivery. Check its connection and retry.",
+        peer_offline: "Your paired browser is offline. Reconnect it and retry.",
+        delivery_timeout: "Your paired browser did not acknowledge delivery. Check its connection and retry.",
       };
       setFeedback(error ? labels[error] : "Delivery failed. You can retry safely.");
     }
@@ -286,8 +286,8 @@ export function App() {
       <Show when={token()} fallback={
         <section class="pairing-screen" aria-labelledby="pairing-title">
           <p class="eyebrow">Secure device pairing</p>
-          <h1 id="pairing-title">Connect your<br /><em>Mac extension.</em></h1>
-          <p class="lede">Open Kanjiwrittr on your Mac, choose “Pair a new iPad,” then enter its single-use code here.</p>
+          <h1 id="pairing-title">Connect your<br /><em>browser extension.</em></h1>
+          <p class="lede">Open the Kanjiwrittr extension on the receiving device, choose “Pair a writing device,” then enter its single-use code here.</p>
           <form class="pairing-form" onSubmit={claimPairing}>
             <label for="pairing-code">Pairing code</label>
             <input id="pairing-code" value={pairingCode()} onInput={(event) => setPairingCode(event.currentTarget.value)} inputmode="text" autocomplete="one-time-code" maxlength="9" placeholder="ABCD EFGH" autofocus />
@@ -298,8 +298,8 @@ export function App() {
       }>
         <section class="workspace workspace--writing" aria-labelledby="page-title">
           <div class="intro app-intro">
-            <div><p class="eyebrow">iPad writing desk</p><h1 id="page-title">Write. Confirm.<br /><em>Send to your Mac.</em></h1></div>
-            <div class={`mac-presence ${extensionOnline() ? "is-online" : ""}`}><span aria-hidden="true" />{extensionOnline() ? "Mac ready" : "Mac offline"}</div>
+            <div><p class="eyebrow">Your writing desk</p><h1 id="page-title">Write. Confirm.<br /><em>Send to your browser.</em></h1></div>
+            <div class={`browser-presence ${extensionOnline() ? "is-online" : ""}`}><span aria-hidden="true" />{extensionOnline() ? "Browser ready" : "Browser offline"}</div>
           </div>
 
           <div class="mode-tabs" role="tablist" aria-label="Input method">
@@ -323,7 +323,7 @@ export function App() {
                 </div>
               </div>
               <WritingCanvas strokes={strokes()} tool={tool()} onCommit={commitStrokes} onSize={(width, height) => setCanvasSize({ width, height })} />
-              <p class="canvas-help">Apple Pencil, touch, or mouse · one character per square · multiple lines supported</p>
+              <p class="canvas-help">Stylus, touch, or mouse · one character per square · multiple lines supported</p>
             </div>
           </Show>
 
@@ -349,16 +349,16 @@ export function App() {
               <p class={`delivery-feedback delivery-feedback--${deliveryState()}`} aria-live="polite">{feedback()}</p>
               <div class="delivery-actions">
                 <Show when={deliveryState() === "failed"}><button class="retry-button" type="button" onClick={() => sendText(true)} disabled={!extensionOnline()}>Retry</button></Show>
-                <button class="send-button" type="button" disabled={!confirmedText().trim() || connection() !== "connected" || !extensionOnline() || deliveryState() === "sending"} onClick={() => sendText(false)}>{deliveryState() === "sending" ? "Sending…" : deliveryState() === "delivered" ? "Send again" : "Send to Mac"}<span aria-hidden="true">↗</span></button>
+                <button class="send-button" type="button" disabled={!confirmedText().trim() || connection() !== "connected" || !extensionOnline() || deliveryState() === "sending"} onClick={() => sendText(false)}>{deliveryState() === "sending" ? "Sending…" : deliveryState() === "delivered" ? "Send again" : "Send to browser"}<span aria-hidden="true">↗</span></button>
               </div>
             </div>
           </section>
 
-          <button class="unpair-button" type="button" onClick={() => void unpair()}>Unpair this iPad and Mac</button>
+          <button class="unpair-button" type="button" onClick={() => void unpair()}>Unpair devices</button>
         </section>
       </Show>
 
-      <footer class="page-footer"><span>Private by design</span><span class="footer-line" aria-hidden="true" /><span>Raw strokes and recognition stay on iPad</span></footer>
+      <footer class="page-footer"><span>Private by design</span><span class="footer-line" aria-hidden="true" /><span>Raw strokes and recognition stay on this device</span></footer>
     </main>
   );
 }

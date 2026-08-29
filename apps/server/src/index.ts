@@ -15,7 +15,7 @@ interface SocketData extends AuthenticatedDevice {
 }
 
 interface PendingDelivery {
-  ipad: Bun.ServerWebSocket<SocketData>;
+  writer: Bun.ServerWebSocket<SocketData>;
   pairingId: string;
   timeout: ReturnType<typeof setTimeout>;
 }
@@ -79,8 +79,8 @@ const server = Bun.serve<SocketData>({
       if (!body || typeof body.code !== "string") return apiError(400, "invalid_request");
       const session = store.claimPairing(body.code);
       if (!session) return apiError(400, "invalid_or_expired_code");
-      const ipad = store.authenticate(session.token);
-      if (ipad) sendToRole(ipad.pairingId, "extension", { type: "pairing.completed" });
+      const writer = store.authenticate(session.token);
+      if (writer) sendToRole(writer.pairingId, "extension", { type: "pairing.completed" });
       return apiJson(session, 200);
     }
 
@@ -145,13 +145,13 @@ const server = Bun.serve<SocketData>({
         role: socket.data.role,
         paired: socket.data.paired,
       });
-      if (socket.data.role === "ipad") {
+      if (socket.data.role === "writer") {
         send(socket, {
           type: "presence.changed",
           extensionOnline: roleOnline(socket.data.pairingId, "extension"),
         });
       } else {
-        sendToRole(socket.data.pairingId, "ipad", { type: "presence.changed", extensionOnline: true });
+        sendToRole(socket.data.pairingId, "writer", { type: "presence.changed", extensionOnline: true });
       }
     },
     message(socket, payload) {
@@ -174,7 +174,7 @@ const server = Bun.serve<SocketData>({
 
       const deliveryKey = `${socket.data.pairingId}:${message.messageId}`;
       if (message.type === "text.deliver") {
-        if (socket.data.role !== "ipad") {
+        if (socket.data.role !== "writer") {
           send(socket, { type: "protocol.error", code: "wrong_device_role" });
           return;
         }
@@ -207,7 +207,7 @@ const server = Bun.serve<SocketData>({
             error: "delivery_timeout",
           });
         }, deliveryTimeoutMs);
-        pendingDeliveries.set(deliveryKey, { ipad: socket, pairingId: socket.data.pairingId, timeout });
+        pendingDeliveries.set(deliveryKey, { writer: socket, pairingId: socket.data.pairingId, timeout });
         send(receiver, { type: "text.delivery", messageId: message.messageId, text: message.text });
         return;
       }
@@ -225,14 +225,14 @@ const server = Bun.serve<SocketData>({
         ...(message.error ? { error: message.error } : {}),
       };
       rememberResult(deliveryKey, result);
-      send(pending.ipad, { type: "delivery.result", messageId: message.messageId, ...result });
+      send(pending.writer, { type: "delivery.result", messageId: message.messageId, ...result });
     },
     close(socket) {
       const pairingSockets = connections.get(socket.data.pairingId);
       pairingSockets?.delete(socket);
       if (pairingSockets?.size === 0) connections.delete(socket.data.pairingId);
       if (socket.data.role === "extension" && !roleOnline(socket.data.pairingId, "extension")) {
-        sendToRole(socket.data.pairingId, "ipad", { type: "presence.changed", extensionOnline: false });
+        sendToRole(socket.data.pairingId, "writer", { type: "presence.changed", extensionOnline: false });
       }
     },
   },
