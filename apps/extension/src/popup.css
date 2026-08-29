@@ -45,7 +45,7 @@ header {
   width: 36px;
   aspect-ratio: 1;
   place-items: center;
-  border-radius: 50%;
+  border-radius: 3px;
   color: var(--color-white);
   background: var(--color-primary);
   font-family: serif;
