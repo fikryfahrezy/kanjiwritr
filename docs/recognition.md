@@ -1,6 +1,6 @@
 # Local handwriting recognition
 
-Kanjiwrittr uses the **DaKanji Single Kanji Recognition v2.0** classifier for
+Kanjiwritr uses the **DaKanji Single Kanji Recognition v2.0** classifier for
 milestone 3. The self-hosted model accepts a 96×96 grayscale character image
 and returns probabilities for 6,000+ kanji. It is small enough for a
 browser-based writing app, runs with ONNX Runtime Web's single-threaded WASM
@@ -32,7 +32,7 @@ confirmed sentence.
 ## Caching and measurement
 
 The model, labels, MIT license, and ONNX WASM runtime are cached under
-`kanjiwrittr-model-v1` by `model-cache-worker.js`. The worker also uses the
+`kanjiwritr-model-v1` by `model-cache-worker.js`. The worker also uses the
 Cache API directly for the model and label map, so a repeat visit remains
 cached even before the service worker controls the page.
 

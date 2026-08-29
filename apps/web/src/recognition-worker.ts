@@ -94,7 +94,7 @@ function loadLabels(): Promise<string[]> {
 }
 
 async function cachedFetch(path: string): Promise<Response> {
-  const cache = await caches.open("kanjiwrittr-model-v1");
+  const cache = await caches.open("kanjiwritr-model-v1");
   const cached = await cache.match(path);
   if (cached) return cached;
   const response = await fetch(path);

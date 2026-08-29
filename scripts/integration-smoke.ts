@@ -1,6 +1,6 @@
 import { encodeClientMessage, parseServerMessage, type ServerMessage } from "../packages/protocol/src";
 
-const baseUrl = process.env.KANJIWRITTR_TEST_URL ?? "http://127.0.0.1:3000";
+const baseUrl = process.env.KANJIWRITR_TEST_URL ?? "http://127.0.0.1:3000";
 
 const pairA = await requestPairing();
 const pairB = await requestPairing();

@@ -1,4 +1,4 @@
-const CACHE_NAME = "kanjiwrittr-model-v1";
+const CACHE_NAME = "kanjiwritr-model-v1";
 const ASSETS = [
   "/models/dakanji/char_classifier.onnx",
   "/models/dakanji/char_classifier_labels.txt",
@@ -13,7 +13,7 @@ self.addEventListener("install", (event) => {
 });
 self.addEventListener("activate", (event) => {
   event.waitUntil(caches.keys().then((keys) => Promise.all(
-    keys.filter((key) => key.startsWith("kanjiwrittr-model-") && key !== CACHE_NAME).map((key) => caches.delete(key)),
+    keys.filter((key) => key.startsWith("kanjiwritr-model-") && key !== CACHE_NAME).map((key) => caches.delete(key)),
   )));
   self.clients.claim();
 });

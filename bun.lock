@@ -3,13 +3,13 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "kanjiwrittr",
+      "name": "kanjiwritr",
     },
     "apps/extension": {
-      "name": "@kanjiwrittr/extension",
+      "name": "@kanjiwritr/extension",
       "version": "0.1.0",
       "dependencies": {
-        "@kanjiwrittr/protocol": "workspace:*",
+        "@kanjiwritr/protocol": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "1.2.21",
@@ -18,10 +18,10 @@
       },
     },
     "apps/server": {
-      "name": "@kanjiwrittr/server",
+      "name": "@kanjiwritr/server",
       "version": "0.1.0",
       "dependencies": {
-        "@kanjiwrittr/protocol": "workspace:*",
+        "@kanjiwritr/protocol": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "1.2.21",
@@ -29,10 +29,10 @@
       },
     },
     "apps/web": {
-      "name": "@kanjiwrittr/web",
+      "name": "@kanjiwritr/web",
       "version": "0.1.0",
       "dependencies": {
-        "@kanjiwrittr/protocol": "workspace:*",
+        "@kanjiwritr/protocol": "workspace:*",
         "onnxruntime-web": "1.22.0",
         "solid-js": "1.9.9",
       },
@@ -43,7 +43,7 @@
       },
     },
     "packages/protocol": {
-      "name": "@kanjiwrittr/protocol",
+      "name": "@kanjiwritr/protocol",
       "version": "0.1.0",
     },
   },
@@ -146,13 +146,13 @@
 
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw=="],
 
-    "@kanjiwrittr/extension": ["@kanjiwrittr/extension@workspace:apps/extension"],
+    "@kanjiwritr/extension": ["@kanjiwritr/extension@workspace:apps/extension"],
 
-    "@kanjiwrittr/protocol": ["@kanjiwrittr/protocol@workspace:packages/protocol"],
+    "@kanjiwritr/protocol": ["@kanjiwritr/protocol@workspace:packages/protocol"],
 
-    "@kanjiwrittr/server": ["@kanjiwrittr/server@workspace:apps/server"],
+    "@kanjiwritr/server": ["@kanjiwritr/server@workspace:apps/server"],
 
-    "@kanjiwrittr/web": ["@kanjiwrittr/web@workspace:apps/web"],
+    "@kanjiwritr/web": ["@kanjiwritr/web@workspace:apps/web"],
 
     "@napi-rs/lzma-linux-x64-gnu": ["@napi-rs/lzma-linux-x64-gnu@1.5.1", "", { "os": "linux", "cpu": "x64" }, "sha512-oTXEIha4SsuXdTA4Iyskj0kpdx2yVXdhd75c2v3xGrHFfVMsbhTPZU/nMPL4sWKo4pBHm3aucLaqGlF696dTyQ=="],
 
@@ -353,11 +353,5 @@
     "yallist": ["yallist@3.1.1", "", {}, "sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g=="],
 
     "babel-plugin-jsx-dom-expressions/@babel/helper-module-imports": ["@babel/helper-module-imports@7.18.6", "", { "dependencies": { "@babel/types": "^7.18.6" } }, "sha512-0NFvs3VkuSYbFi1x2Vd6tKrywq+z/cLeYC/RJNFrIX/30Bf5aiGYbtvGXolEktzJH8o5E5KJ3tT+nkxuuZFVlA=="],
-
-    "babel-preset-solid/solid-js": ["solid-js@1.9.15", "", { "dependencies": { "csstype": "^3.1.0", "seroval": "~1.5.4", "seroval-plugins": "~1.5.4" } }, "sha512-EeiY2xfpZJqPLjXspVEKjAII4yv8NyG//NxZ3IpOFHdUNnnTyL0uJOeS9LWGvA7cFCz5y94cjFwYlmw5Luncsg=="],
-
-    "babel-preset-solid/solid-js/seroval": ["seroval@1.5.6", "", {}, "sha512-rVQVWjjSvlINzaQPZH5JFqsqEsIWdTxY3iJZCnTL/5gQbXIRooVZKI60tVCkOVfzcRPejboxO2t0P89dg5mQaA=="],
-
-    "babel-preset-solid/solid-js/seroval-plugins": ["seroval-plugins@1.5.6", "", { "peerDependencies": { "seroval": "^1.0" } }, "sha512-HXuLAX2pu/UByPpaeo/TaMfvMIi+1QqIoPJYCcAtU8QkVNwgR6MPlGuCQTErV1JwraaMbYaWVIBX7mppzGLATQ=="],
   }
 }

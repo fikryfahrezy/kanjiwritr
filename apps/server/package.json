@@ -1,5 +1,5 @@
 {
-  "name": "@kanjiwrittr/server",
+  "name": "@kanjiwritr/server",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -8,7 +8,7 @@
     "typecheck": "tsc --pretty false"
   },
   "dependencies": {
-    "@kanjiwrittr/protocol": "workspace:*"
+    "@kanjiwritr/protocol": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "1.2.21",

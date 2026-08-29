@@ -67,7 +67,7 @@ function render(state: ExtensionState): void {
     error: "Connection error",
   };
   statusElement.className = `status status--${state.connectionState}`;
-  statusElement.innerHTML = `<span></span> ${labels[state.connectionState]}`;
+  statusElement.replaceChildren(document.createElement("span"), ` ${labels[state.connectionState]}`);
 }
 
 function setBusy(value: boolean): void {

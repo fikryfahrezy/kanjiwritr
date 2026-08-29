@@ -1,5 +1,5 @@
 {
-  "name": "@kanjiwrittr/web",
+  "name": "@kanjiwritr/web",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -9,7 +9,7 @@
     "typecheck": "tsc -b --pretty false"
   },
   "dependencies": {
-    "@kanjiwrittr/protocol": "workspace:*",
+    "@kanjiwritr/protocol": "workspace:*",
     "onnxruntime-web": "1.22.0",
     "solid-js": "1.9.9"
   },

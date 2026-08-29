@@ -1,5 +1,5 @@
 services:
-  kanjiwrittr:
+  kanjiwritr:
     build:
       context: .
       dockerfile: Dockerfile

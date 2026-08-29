@@ -2,7 +2,7 @@ import { Database } from "bun:sqlite";
 import { createHash, createHmac, randomBytes } from "node:crypto";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
-import type { DeviceRole, PairingClaimResponse, PairingRequestResponse } from "@kanjiwrittr/protocol";
+import type { DeviceRole, PairingClaimResponse, PairingRequestResponse } from "@kanjiwritr/protocol";
 
 const CODE_ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
 const CODE_TTL_MS = 10 * 60_000;

@@ -1,4 +1,4 @@
-# Kanjiwrittr
+# Kanjiwritr
 
 Handwrite Japanese on one device, confirm the text, and send it to the currently focused field in a paired browser.
 
@@ -16,7 +16,7 @@ See [TODO.md](TODO.md) for the implementation roadmap and milestone completion c
 ```text
 apps/web          SolidJS browser-based writing application
 apps/server       Bun HTTP and WebSocket server
-apps/extension    Chromium Manifest V3 extension
+apps/extension    Chromium and Firefox Manifest V3 extension
 packages/protocol Shared transport message types and parsers
 ```
 
@@ -36,7 +36,7 @@ bun run dev
 
 The static landing page runs at `http://localhost:5173`, and the writing app is available at `http://localhost:5173/app/`. Vite proxies `/ws` and `/healthz` to the Bun server on port `3000`.
 
-The server creates `data/kanjiwrittr.sqlite` by default. Set a stable `CREDENTIAL_SECRET` in production so pending one-time pairing codes remain valid across a server restart. Device credentials are stored only as hashes, and delivered text is neither logged nor persisted.
+The server creates `data/kanjiwritr.sqlite` by default. Set a stable `CREDENTIAL_SECRET` in production so pending one-time pairing codes remain valid across a server restart. Device credentials are stored only as hashes, and delivered text is neither logged nor persisted.
 
 Rate limits are enabled by default. For unlimited local pairing attempts, set `RATE_LIMITS_ENABLED=false` in the root `.env` and restart the development server. Never disable them in production.
 
@@ -58,22 +58,65 @@ bun run start
 
 Then open `http://localhost:3000` or check `http://localhost:3000/healthz`.
 
-## Chromium receiver extension
+## Browser receiver extensions
 
-After `bun run build`, load `apps/extension/dist` as an unpacked extension:
+After `bun run build`, the browser-specific extensions are available under
+`apps/extension/dist`.
+
+### Chromium
 
 1. Open `chrome://extensions`.
 2. Enable **Developer mode**.
 3. Choose **Load unpacked**.
-4. Select `apps/extension/dist`.
+4. Select `apps/extension/dist/chromium`.
+
+### Firefox
+
+1. Open `about:debugging#/runtime/this-firefox`.
+2. Choose **Load Temporary Add-on**.
+3. Select `apps/extension/dist/firefox/manifest.json`.
+
+Firefox removes temporary add-ons when the browser restarts. A signed release
+can be installed persistently after it is packaged and submitted to Firefox Add-ons.
 
 Build the extension with the public server URL that should appear by default:
 
 ```sh
-KANJIWRITTR_DEFAULT_SERVER_URL=https://your-kanjiwrittr-domain.example bun run build:extension
+KANJIWRITR_DEFAULT_SERVER_URL=https://your-kanjiwritr-domain.example bun run build:extension
 ```
 
-Open the popup, request a pairing code, and enter it at `/app/` on the writing device. The service worker maintains the authenticated connection and replaces the contents of the most recently focused input, textarea, or contenteditable field with each acknowledged delivery, including fields in frames. The popup also exposes server settings and explicit unpairing.
+The command above builds both targets. To build only one target, run
+`bun run --cwd apps/extension build:chromium` or
+`bun run --cwd apps/extension build:firefox`.
+
+Open the popup, request a pairing code, and enter it at `/app/` on the writing device. The extension's background process maintains the authenticated connection and replaces the contents of the most recently focused input, textarea, or contenteditable field with each acknowledged delivery, including fields in frames. The popup also exposes server settings and explicit unpairing.
+
+### Automated extension releases
+
+The `Browser extensions` GitHub Actions workflow builds and validates both
+targets on pull requests and pushes to `main`. Its packaged ZIP files are
+available from the workflow run for 14 days.
+
+Pushing a tag that matches the extension package version creates a GitHub
+Release and attaches both browser ZIP files, the corresponding source archive,
+and SHA-256 checksums. For example, after setting
+`apps/extension/package.json` to version `0.2.0`:
+
+```sh
+git tag v0.2.0
+git push origin v0.2.0
+```
+
+Set the Actions repository variable `KANJIWRITR_DEFAULT_SERVER_URL` to make a
+deployed server the default in release builds. Without it, releases default to
+`http://localhost:3000`, and users can still change the server in the popup.
+
+Chromium users download and extract the ZIP, then load its directory as an
+unpacked extension. Firefox requires Mozilla signing for normal persistent
+installation. To attach a signed Firefox XPI automatically, create AMO API
+credentials and add them as Actions secrets named `AMO_JWT_ISSUER` and
+`AMO_JWT_SECRET`. Without those secrets, the release still includes the unsigned
+Firefox ZIP for temporary installation through `about:debugging`.
 
 ## Docker deployment
 
@@ -87,10 +130,10 @@ docker compose ps
 The service is exposed on port `3000` by default. Override the host port when necessary:
 
 ```sh
-KANJIWRITTR_PORT=8080 docker compose up --build -d
+KANJIWRITR_PORT=8080 docker compose up --build -d
 ```
 
-Copy `.env.example` to `.env`, replace `CREDENTIAL_SECRET` with a long random value, then start Compose. The image runs as the unprivileged `bun` user, includes a `/healthz` health check, and persists SQLite in the `kanjiwrittr-data` volume.
+Copy `.env.example` to `.env`, replace `CREDENTIAL_SECRET` with a long random value, then start Compose. The image runs as the unprivileged `bun` user, includes a `/healthz` health check, and persists SQLite in the `kanjiwritr-data` volume.
 
 ## Handwriting recognition
 
@@ -103,5 +146,5 @@ See [docs/pairing-protocol.md](docs/pairing-protocol.md) for the relay design an
 With a built server running, verify pairing, presence, isolated routing, acknowledgements, and revocation:
 
 ```sh
-KANJIWRITTR_TEST_URL=http://127.0.0.1:3000 bun run test:integration
+KANJIWRITR_TEST_URL=http://127.0.0.1:3000 bun run test:integration
 ```

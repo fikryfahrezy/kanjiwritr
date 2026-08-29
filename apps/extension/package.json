@@ -1,14 +1,16 @@
 {
-  "name": "@kanjiwrittr/extension",
+  "name": "@kanjiwritr/extension",
   "private": true,
   "version": "0.1.0",
   "type": "module",
   "scripts": {
     "build": "bun scripts/build.ts",
+    "build:chromium": "bun scripts/build.ts chromium",
+    "build:firefox": "bun scripts/build.ts firefox",
     "typecheck": "tsc --pretty false"
   },
   "dependencies": {
-    "@kanjiwrittr/protocol": "workspace:*"
+    "@kanjiwritr/protocol": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "1.2.21",

@@ -4,14 +4,14 @@ import {
   parseServerMessage,
   type ConnectionState,
   type DeliveryError,
-} from "@kanjiwrittr/protocol";
+} from "@kanjiwritr/protocol";
 import { WritingCanvas } from "./WritingCanvas";
 import type { InkStroke, RecognitionResult, WritingTool } from "./ink-types";
 import { LocalRecognizer } from "./recognizer";
 import { segmentStrokes } from "./segmentation";
 
-const TOKEN_KEY = "kanjiwrittr.device-token";
-const AUTO_SEND_KEY = "kanjiwrittr.auto-send";
+const TOKEN_KEY = "kanjiwritr.device-token";
+const AUTO_SEND_KEY = "kanjiwritr.auto-send";
 const AUTO_SEND_DELAY_MS = 1_500;
 
 const stateLabel: Record<ConnectionState, string> = {
@@ -326,7 +326,7 @@ export function App() {
   return (
     <main class="app-shell">
       <header class="topbar">
-        <a class="brand brand--mark-only" href="/" aria-label="Kanjiwrittr home"><span class="brand-mark" aria-hidden="true">書</span></a>
+        <a class="brand brand--mark-only" href="/" aria-label="Kanjiwritr home"><span class="brand-mark" aria-hidden="true">書</span></a>
         <Show when={token()}>
           <div class="app-statuses" aria-label="Device status">
             <div class={`connection connection--${connection()}`} role="status"><span class="connection-dot" aria-hidden="true" />{stateLabel[connection()]}</div>

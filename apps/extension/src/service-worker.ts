@@ -1,6 +1,6 @@
-import { encodeClientMessage, parseServerMessage, type DeliveryError } from "@kanjiwrittr/protocol";
+import { encodeClientMessage, parseServerMessage, type DeliveryError } from "@kanjiwritr/protocol";
 
-declare const __KANJIWRITTR_DEFAULT_SERVER_URL__: string;
+declare const __KANJIWRITR_DEFAULT_SERVER_URL__: string;
 
 type ExtensionConnectionState = "not-paired" | "waiting" | "connecting" | "online" | "reconnecting" | "error";
 
@@ -22,7 +22,7 @@ interface FocusedFrame {
 }
 
 const defaults: ExtensionState = {
-  serverUrl: __KANJIWRITTR_DEFAULT_SERVER_URL__,
+  serverUrl: __KANJIWRITR_DEFAULT_SERVER_URL__,
   connectionState: "not-paired",
 };
 
@@ -169,7 +169,7 @@ function connect(state: ExtensionState): void {
     reconnectTimer = setTimeout(() => void restoreConnection(), Math.min(30_000, 1_000 * 2 ** Math.min(reconnectAttempt, 5)));
   });
   connection.addEventListener("error", () => {
-    if (socket === connection) void updateState({ connectionState: "error", lastError: "Cannot reach the Kanjiwrittr server." });
+    if (socket === connection) void updateState({ connectionState: "error", lastError: "Cannot reach the Kanjiwritr server." });
   });
 }
 
