@@ -7,6 +7,9 @@
     "build": "bun scripts/build.ts",
     "typecheck": "tsc --pretty false"
   },
+  "dependencies": {
+    "@kanjiwrittr/protocol": "workspace:*"
+  },
   "devDependencies": {
     "@types/bun": "^1.2.21",
     "@types/chrome": "^0.1.1",

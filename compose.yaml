@@ -7,9 +7,16 @@ services:
     environment:
       HOST: 0.0.0.0
       PORT: 3000
+      DATABASE_PATH: /app/data/kanjiwrittr.sqlite
+      CREDENTIAL_SECRET: ${CREDENTIAL_SECRET:?Set CREDENTIAL_SECRET in .env}
+    volumes:
+      - kanjiwrittr-data:/app/data
     healthcheck:
       test: ["CMD", "bun", "-e", "process.exit((await fetch('http://127.0.0.1:3000/healthz')).ok ? 0 : 1)"]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 5s
+
+volumes:
+  kanjiwrittr-data:

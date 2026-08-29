@@ -23,6 +23,7 @@ ENV WEB_ROOT=/app/apps/web/dist
 
 COPY --from=build --chown=bun:bun /app/dist/server ./dist/server
 COPY --from=build --chown=bun:bun /app/apps/web/dist ./apps/web/dist
+RUN mkdir -p /app/data && chown bun:bun /app/data
 
 USER bun
 EXPOSE 3000

@@ -2,25 +2,40 @@ import { describe, expect, test } from "bun:test";
 import { parseClientMessage, parseServerMessage } from "../src";
 
 describe("protocol parsing", () => {
-  test("accepts a valid preview message", () => {
+  test("accepts delivery and acknowledgement messages", () => {
     expect(parseClientMessage(JSON.stringify({
-      type: "text.preview",
+      type: "text.deliver",
       messageId: "message-1",
       text: "日本語",
-    }))).toEqual({ type: "text.preview", messageId: "message-1", text: "日本語" });
-  });
-
-  test("rejects empty text and malformed JSON", () => {
-    expect(parseClientMessage('{"type":')).toBeUndefined();
+    }))).toEqual({ type: "text.deliver", messageId: "message-1", text: "日本語" });
     expect(parseClientMessage({
-      type: "text.preview",
+      type: "delivery.ack",
       messageId: "message-1",
-      text: "   ",
-    })).toBeUndefined();
+      delivered: false,
+      error: "no_focused_field",
+    })).toEqual({
+      type: "delivery.ack",
+      messageId: "message-1",
+      delivered: false,
+      error: "no_focused_field",
+    });
   });
 
-  test("accepts server acknowledgements", () => {
-    expect(parseServerMessage('{"type":"text.received","messageId":"message-1"}'))
-      .toEqual({ type: "text.received", messageId: "message-1" });
+  test("rejects empty text, unbounded ids, and malformed JSON", () => {
+    expect(parseClientMessage('{"type":')).toBeUndefined();
+    expect(parseClientMessage({ type: "text.deliver", messageId: "message-1", text: "   " }))
+      .toBeUndefined();
+    expect(parseClientMessage({ type: "ping", extra: "is ignored" })).toEqual({ type: "ping" });
+    expect(parseClientMessage({ type: "delivery.ack", messageId: "x".repeat(129), delivered: true }))
+      .toBeUndefined();
+  });
+
+  test("accepts presence, delivery, and result server messages", () => {
+    expect(parseServerMessage('{"type":"presence.changed","extensionOnline":true}'))
+      .toEqual({ type: "presence.changed", extensionOnline: true });
+    expect(parseServerMessage({ type: "text.delivery", messageId: "m1", text: "語" }))
+      .toEqual({ type: "text.delivery", messageId: "m1", text: "語" });
+    expect(parseServerMessage({ type: "delivery.result", messageId: "m1", delivered: true }))
+      .toEqual({ type: "delivery.result", messageId: "m1", delivered: true });
   });
 });

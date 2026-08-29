@@ -5,6 +5,7 @@ let lastEditable: HTMLElement | null = null;
 document.addEventListener("focusin", (event) => {
   if (event.target instanceof HTMLElement && isEditable(event.target)) {
     lastEditable = event.target;
+    void chrome.runtime.sendMessage({ type: "editable.focused" }).catch(() => undefined);
   }
 });
 
@@ -16,9 +17,11 @@ chrome.runtime.onMessage.addListener((message: unknown, _sender, respond) => {
 });
 
 function isEditable(element: HTMLElement): boolean {
-  return element instanceof HTMLInputElement
-    || element instanceof HTMLTextAreaElement
-    || element.isContentEditable;
+  if (element instanceof HTMLTextAreaElement) return !element.disabled && !element.readOnly;
+  if (element instanceof HTMLInputElement) {
+    return !element.disabled && !element.readOnly && ["text", "search", "email", "url", "tel", "password"].includes(element.type);
+  }
+  return element.isContentEditable;
 }
 
 function isInsertMessage(value: unknown): value is InsertMessage {
@@ -32,15 +35,19 @@ function isInsertMessage(value: unknown): value is InsertMessage {
 
 function insertText(target: HTMLElement, text: string): boolean {
   target.focus();
+  const beforeInput = new InputEvent("beforeinput", {
+    bubbles: true,
+    cancelable: true,
+    inputType: "insertText",
+    data: text,
+  });
+  if (!target.dispatchEvent(beforeInput)) return false;
+
   if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
     const start = target.selectionStart ?? target.value.length;
     const end = target.selectionEnd ?? start;
     target.setRangeText(text, start, end, "end");
-    target.dispatchEvent(new InputEvent("input", {
-      bubbles: true,
-      inputType: "insertText",
-      data: text,
-    }));
+    dispatchEditEvents(target, text);
     return true;
   }
 
@@ -59,13 +66,18 @@ function insertText(target: HTMLElement, text: string): boolean {
     range.collapse(true);
     selection.removeAllRanges();
     selection.addRange(range);
-    target.dispatchEvent(new InputEvent("input", {
-      bubbles: true,
-      inputType: "insertText",
-      data: text,
-    }));
+    dispatchEditEvents(target, text);
     return true;
   }
 
   return false;
+}
+
+function dispatchEditEvents(target: HTMLElement, text: string): void {
+  target.dispatchEvent(new InputEvent("input", {
+    bubbles: true,
+    inputType: "insertText",
+    data: text,
+  }));
+  target.dispatchEvent(new Event("change", { bubbles: true }));
 }

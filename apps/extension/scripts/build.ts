@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 const root = resolve(import.meta.dir, "..");
 const source = resolve(root, "src");
 const output = resolve(root, "dist");
+const defaultServerUrl = process.env.KANJIWRITTR_DEFAULT_SERVER_URL ?? "http://localhost:3000";
 
 await rm(output, { recursive: true, force: true });
 await mkdir(output, { recursive: true });
@@ -19,6 +20,9 @@ const result = await Bun.build({
   format: "esm",
   naming: "[name].js",
   minify: true,
+  define: {
+    __KANJIWRITTR_DEFAULT_SERVER_URL__: JSON.stringify(defaultServerUrl),
+  },
 });
 
 if (!result.success) {

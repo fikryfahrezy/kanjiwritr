@@ -4,7 +4,8 @@
   "version": "0.1.0",
   "description": "Insert Japanese text from Kanjiwrittr into the current web page.",
   "minimum_chrome_version": "116",
-  "permissions": ["activeTab", "storage"],
+  "permissions": ["activeTab", "alarms", "storage"],
+  "host_permissions": ["http://*/*", "https://*/*"],
   "action": {
     "default_title": "Kanjiwrittr",
     "default_popup": "popup.html"

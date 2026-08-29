@@ -2,7 +2,9 @@
 
 Handwrite Japanese on an iPad, confirm the text, and send it to the currently focused field in a Mac browser.
 
-This initial milestone provides the Bun monorepo, a one-page product landing page, a placeholder SolidJS iPad UI, a Bun HTTP/WebSocket server, a Chromium extension preview, and a production Docker deployment. Pairing and real iPad-to-Mac forwarding are intentionally left for the next milestone.
+Milestones 1–3 provide secure device pairing, real iPad-to-Mac browser delivery, a pressure-sensitive handwriting canvas, and local Japanese kanji recognition with confirmation before sending.
+
+See [TODO.md](TODO.md) for the implementation roadmap and milestone completion criteria.
 
 ## Requirements
 
@@ -34,6 +36,10 @@ bun run dev
 
 The static landing page runs at `http://localhost:5173`, and the dynamic writing preview is available at `http://localhost:5173/app/`. Vite proxies `/ws` and `/healthz` to the Bun server on port `3000`.
 
+The server creates `data/kanjiwrittr.sqlite` by default. Set a stable `CREDENTIAL_SECRET` in production so pending one-time pairing codes remain valid across a server restart. Device credentials are stored only as hashes, and delivered text is neither logged nor persisted.
+
+Rate limits are enabled by default. For unlimited local pairing attempts, set `RATE_LIMITS_ENABLED=false` in the root `.env` and restart the development server. Never disable them in production.
+
 The web build uses two HTML entry points. `apps/web/index.html` contains the complete marketing page for search engines and works without JavaScript; `apps/web/app/index.html` loads the SolidJS application. The production server redirects `/app` to `/app/` and keeps application fallbacks inside that route.
 
 ## Build and test
@@ -61,7 +67,13 @@ After `bun run build`, load `apps/extension/dist` as an unpacked extension:
 3. Choose **Load unpacked**.
 4. Select `apps/extension/dist`.
 
-The current popup can insert test text into a focused input, textarea, or contenteditable field. Server pairing is not connected yet.
+Build the extension with the public server URL that should appear by default:
+
+```sh
+KANJIWRITTR_DEFAULT_SERVER_URL=https://your-kanjiwrittr-domain.example bun run build:extension
+```
+
+Open the popup, request a pairing code, and enter it at `/app/` on the iPad. The service worker maintains the authenticated connection and inserts acknowledged deliveries into the most recently focused input, textarea, or contenteditable field, including fields in frames. The popup also exposes server settings and explicit unpairing.
 
 ## Docker deployment
 
@@ -78,8 +90,18 @@ The service is exposed on port `3000` by default. Override the host port when ne
 KANJIWRITTR_PORT=8080 docker compose up --build -d
 ```
 
-The image runs as the unprivileged `bun` user and includes a `/healthz` health check. It does not need a database volume yet because the placeholder server stores no user data.
+Copy `.env.example` to `.env`, replace `CREDENTIAL_SECRET` with a long random value, then start Compose. The image runs as the unprivileged `bun` user, includes a `/healthz` health check, and persists SQLite in the `kanjiwrittr-data` volume.
 
-## Current preview protocol
+## Handwriting recognition
 
-The placeholder page connects to `/ws` and can send a `text.preview` message. The server acknowledges the message without logging or persisting its text. Authentication, QR pairing, encryption, receiver presence, and actual delivery will be introduced together so an unauthenticated relay is never exposed by accident.
+The iPad app captures Pencil, touch, and mouse strokes with pressure, timing, and bounds. A Web Worker segments visible character cells and runs the self-hosted MIT-licensed DaKanji ONNX model through single-threaded ONNX Runtime Web WASM. Model assets are cached for repeat visits. Recognition choices and sentence suggestions remain editable, and raw strokes never leave the iPad.
+
+See [docs/pairing-protocol.md](docs/pairing-protocol.md) for the relay design and [docs/recognition.md](docs/recognition.md) for model licensing, limitations, caching, and measurement details.
+
+## Integration smoke test
+
+With a built server running, verify pairing, presence, isolated routing, acknowledgements, and revocation:
+
+```sh
+KANJIWRITTR_TEST_URL=http://127.0.0.1:3000 bun run test:integration
+```

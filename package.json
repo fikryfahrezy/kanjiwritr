@@ -13,6 +13,7 @@
     "build:extension": "bun run --cwd apps/extension build",
     "start": "bun dist/server/index.js",
     "test": "bun test",
+    "test:integration": "bun scripts/integration-smoke.ts",
     "typecheck": "bun run typecheck:web && bun run typecheck:server && bun run typecheck:extension",
     "typecheck:web": "bun run --cwd apps/web typecheck",
     "typecheck:server": "bun run --cwd apps/server typecheck",

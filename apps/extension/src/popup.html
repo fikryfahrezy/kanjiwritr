@@ -8,13 +8,23 @@
   </head>
   <body>
     <main>
-      <header>
-        <span class="mark">書</span>
-        <div><strong>Kanjiwrittr</strong><small>Extension preview</small></div>
-      </header>
-      <p class="status"><span></span> Not paired with an iPad</p>
-      <label>Test insertion<textarea id="text" lang="ja" placeholder="日本語"></textarea></label>
-      <button id="insert" type="button">Insert into page</button>
+      <header><span class="mark">書</span><div><strong>Kanjiwrittr</strong><small>Mac browser receiver</small></div></header>
+      <p id="status" class="status" role="status"><span></span> Loading…</p>
+
+      <section id="pairing" hidden>
+        <p class="hint">Enter this one-time code on your iPad. It expires after 10 minutes.</p>
+        <output id="code" class="code" aria-label="Pairing code"></output>
+      </section>
+
+      <button id="pair" type="button">Pair a new iPad</button>
+      <button id="unpair" class="secondary danger" type="button" hidden>Unpair devices</button>
+
+      <details>
+        <summary>Server settings</summary>
+        <label for="server">Kanjiwrittr server</label>
+        <input id="server" type="url" placeholder="https://kanjiwrittr.example" />
+        <button id="save-server" class="secondary" type="button">Save server URL</button>
+      </details>
       <p id="feedback" class="feedback" aria-live="polite"></p>
     </main>
     <script type="module" src="popup.js"></script>
