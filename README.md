@@ -34,7 +34,7 @@ Start the web UI and backend together:
 bun run dev
 ```
 
-The static landing page runs at `http://localhost:5173`, and the dynamic writing preview is available at `http://localhost:5173/app/`. Vite proxies `/ws` and `/healthz` to the Bun server on port `3000`.
+The static landing page runs at `http://localhost:5173`, and the writing app is available at `http://localhost:5173/app/`. Vite proxies `/ws` and `/healthz` to the Bun server on port `3000`.
 
 The server creates `data/kanjiwrittr.sqlite` by default. Set a stable `CREDENTIAL_SECRET` in production so pending one-time pairing codes remain valid across a server restart. Device credentials are stored only as hashes, and delivered text is neither logged nor persisted.
 
@@ -58,7 +58,7 @@ bun run start
 
 Then open `http://localhost:3000` or check `http://localhost:3000/healthz`.
 
-## Chromium extension preview
+## Chromium receiver extension
 
 After `bun run build`, load `apps/extension/dist` as an unpacked extension:
 
