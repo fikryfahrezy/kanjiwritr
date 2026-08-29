@@ -653,6 +653,16 @@ h2 { margin-bottom: 0; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.0
 .delivery-feedback--delivered { color: #407d65 !important; }
 .delivery-feedback--failed { color: #a6402d !important; }
 .delivery-actions { display: flex; min-width: 0; align-items: center; gap: 8px; }
+.auto-send-control { display: inline-flex; align-items: center; gap: 7px; color: #66726d; cursor: pointer; user-select: none; }
+.auto-send-control input { position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; }
+.auto-send-switch { position: relative; width: 29px; height: 17px; flex: 0 0 auto; border: 1px solid rgba(30,41,38,.28); border-radius: 999px; background: rgba(255,255,255,.62); transition: border-color 160ms ease, background 160ms ease; }
+.auto-send-switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 9px; height: 9px; border-radius: 50%; background: #89928e; transition: transform 160ms ease, background 160ms ease; }
+.auto-send-control input:checked + .auto-send-switch { border-color: #407d65; background: rgba(64,125,101,.14); }
+.auto-send-control input:checked + .auto-send-switch::after { background: #407d65; transform: translateX(12px); }
+.auto-send-control input:focus-visible + .auto-send-switch { outline: 2px solid #bd4f35; outline-offset: 2px; }
+.auto-send-copy { display: grid; gap: 1px; line-height: 1; }
+.auto-send-copy strong { font-size: .58rem; font-weight: 500; }
+.auto-send-copy small { color: #8a918e; font-size: .48rem; }
 .retry-button { border: 1px solid rgba(30,41,38,.22); }
 .retry-button:disabled { opacity: .4; }
 .unpair-button { display: block; margin: 0 8px 0 auto; padding: 8px; border: 0; color: #8b6b62; background: transparent; cursor: pointer; font-size: .59rem; text-decoration: underline; text-underline-offset: 3px; }
@@ -682,5 +692,6 @@ h2 { margin-bottom: 0; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.0
   .candidate-group button { min-height: 60px; }
   .recognition-card .card-footer { flex-direction: column; }
   .delivery-actions { width: 100%; }
+  .auto-send-control { margin-right: auto; }
   .delivery-actions .send-button { flex: 1; }
 }

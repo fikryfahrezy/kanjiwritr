@@ -73,7 +73,7 @@ Build the extension with the public server URL that should appear by default:
 KANJIWRITTR_DEFAULT_SERVER_URL=https://your-kanjiwrittr-domain.example bun run build:extension
 ```
 
-Open the popup, request a pairing code, and enter it at `/app/` on the writing device. The service worker maintains the authenticated connection and inserts acknowledged deliveries into the most recently focused input, textarea, or contenteditable field, including fields in frames. The popup also exposes server settings and explicit unpairing.
+Open the popup, request a pairing code, and enter it at `/app/` on the writing device. The service worker maintains the authenticated connection and replaces the contents of the most recently focused input, textarea, or contenteditable field with each acknowledged delivery, including fields in frames. The popup also exposes server settings and explicit unpairing.
 
 ## Docker deployment
 

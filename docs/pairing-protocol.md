@@ -11,7 +11,8 @@ Both clients authenticate the `/ws` upgrade with their device token. The
 server resolves the token to a role and pairing before accepting the socket,
 then routes `text.deliver` only from a writing client to an extension in that
 pairing.
-The extension acknowledges insertion with `delivery.ack`; only then does the
+The extension replaces the focused editable field's contents and acknowledges
+the replacement with `delivery.ack`; only then does the
 writing client receive `delivery.result`. Results are retained without text for
 five minutes to make same-ID retries idempotent.
 

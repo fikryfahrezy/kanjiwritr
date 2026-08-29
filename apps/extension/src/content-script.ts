@@ -13,7 +13,7 @@ chrome.runtime.onMessage.addListener((message: unknown, _sender, respond) => {
   if (!isInsertMessage(message)) return;
   const active = document.activeElement;
   const target = active instanceof HTMLElement && isEditable(active) ? active : lastEditable;
-  respond({ inserted: target ? insertText(target, message.text) : false });
+  respond({ inserted: target ? replaceText(target, message.text) : false });
 });
 
 function isEditable(element: HTMLElement): boolean {
@@ -33,32 +33,27 @@ function isInsertMessage(value: unknown): value is InsertMessage {
     && typeof value.text === "string";
 }
 
-function insertText(target: HTMLElement, text: string): boolean {
+function replaceText(target: HTMLElement, text: string): boolean {
   target.focus();
   const beforeInput = new InputEvent("beforeinput", {
     bubbles: true,
     cancelable: true,
-    inputType: "insertText",
+    inputType: "insertReplacementText",
     data: text,
   });
   if (!target.dispatchEvent(beforeInput)) return false;
 
   if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
-    const start = target.selectionStart ?? target.value.length;
-    const end = target.selectionEnd ?? start;
-    target.setRangeText(text, start, end, "end");
-    dispatchEditEvents(target, text);
+    target.setRangeText(text, 0, target.value.length, "end");
+    dispatchReplacementEvents(target, text);
     return true;
   }
 
   if (target.isContentEditable) {
     const selection = window.getSelection();
     if (!selection) return false;
-    const range = selection.rangeCount > 0 ? selection.getRangeAt(0) : document.createRange();
-    if (!target.contains(range.commonAncestorContainer)) {
-      range.selectNodeContents(target);
-      range.collapse(false);
-    }
+    const range = document.createRange();
+    range.selectNodeContents(target);
     range.deleteContents();
     const textNode = document.createTextNode(text);
     range.insertNode(textNode);
@@ -66,17 +61,17 @@ function insertText(target: HTMLElement, text: string): boolean {
     range.collapse(true);
     selection.removeAllRanges();
     selection.addRange(range);
-    dispatchEditEvents(target, text);
+    dispatchReplacementEvents(target, text);
     return true;
   }
 
   return false;
 }
 
-function dispatchEditEvents(target: HTMLElement, text: string): void {
+function dispatchReplacementEvents(target: HTMLElement, text: string): void {
   target.dispatchEvent(new InputEvent("input", {
     bubbles: true,
-    inputType: "insertText",
+    inputType: "insertReplacementText",
     data: text,
   }));
   target.dispatchEvent(new Event("change", { bubbles: true }));

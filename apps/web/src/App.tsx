@@ -11,6 +11,8 @@ import { LocalRecognizer } from "./recognizer";
 import { segmentStrokes } from "./segmentation";
 
 const TOKEN_KEY = "kanjiwrittr.device-token";
+const AUTO_SEND_KEY = "kanjiwrittr.auto-send";
+const AUTO_SEND_DELAY_MS = 1_500;
 
 const stateLabel: Record<ConnectionState, string> = {
   connecting: "Connecting",
@@ -43,6 +45,7 @@ export function App() {
   const [recognitionError, setRecognitionError] = createSignal("");
   const [recognizing, setRecognizing] = createSignal(false);
   const [confirmedText, setConfirmedText] = createSignal("");
+  const [autoSend, setAutoSend] = createSignal(localStorage.getItem(AUTO_SEND_KEY) === "true");
   const [inputMode, setInputMode] = createSignal<"write" | "type">("write");
   const [confirmationSide, setConfirmationSide] = createSignal<"left" | "right">("right");
   const [deliveryState, setDeliveryState] = createSignal<"idle" | "sending" | "delivered" | "failed">("idle");
@@ -55,6 +58,7 @@ export function App() {
   let recognizer: LocalRecognizer | undefined;
   let recognitionSequence = 0;
   let lastAutomaticText = "";
+  let lastSentText = "";
 
   const characterGroups = createMemo(() => {
     const size = canvasSize();
@@ -72,9 +76,12 @@ export function App() {
       setRecognizing(false);
       return;
     }
+    setRecognizing(true);
     const timer = window.setTimeout(async () => {
-      if (!recognizer) return;
-      setRecognizing(true);
+      if (!recognizer) {
+        if (sequence === recognitionSequence) setRecognizing(false);
+        return;
+      }
       setRecognitionError("");
       try {
         const result = await recognizer.recognize(groups, size.width, size.height);
@@ -91,6 +98,24 @@ export function App() {
         if (sequence === recognitionSequence) setRecognizing(false);
       }
     }, 500);
+    onCleanup(() => window.clearTimeout(timer));
+  });
+
+  createEffect(() => {
+    const enabled = autoSend();
+    const text = confirmedText().trim();
+    const ready = connection() === "connected" && extensionOnline();
+    const busy = deliveryState() === "sending";
+    const waitingForRecognition = inputMode() === "write" && recognizing();
+    if (!text) {
+      lastSentText = "";
+      return;
+    }
+    if (!enabled || !ready || busy || waitingForRecognition || text === lastSentText) return;
+
+    const timer = window.setTimeout(() => {
+      if (confirmedText().trim() === text) sendText(false);
+    }, AUTO_SEND_DELAY_MS);
     onCleanup(() => window.clearTimeout(timer));
   });
 
@@ -248,6 +273,11 @@ export function App() {
     setConfirmedText(chars.join(""));
   }
 
+  function setAutoSendEnabled(enabled: boolean): void {
+    setAutoSend(enabled);
+    localStorage.setItem(AUTO_SEND_KEY, String(enabled));
+  }
+
   function sendText(retry = false): void {
     const text = confirmedText().trim();
     if (!text || socket?.readyState !== WebSocket.OPEN || !extensionOnline()) return;
@@ -255,6 +285,7 @@ export function App() {
       ? pendingDelivery()!
       : { messageId: crypto.randomUUID(), text };
     setPendingDelivery(delivery);
+    lastSentText = delivery.text;
     setDeliveryState("sending");
     setFeedback("Sending confirmed text…");
     socket.send(encodeClientMessage({ type: "text.deliver", ...delivery }));
@@ -264,7 +295,7 @@ export function App() {
     if (pendingDelivery()?.messageId !== messageId) return;
     if (delivered) {
       setDeliveryState("delivered");
-      setFeedback("Delivered into the focused field in your paired browser.");
+      setFeedback("Replaced the focused field in your paired browser.");
     } else {
       setDeliveryState("failed");
       const labels: Record<DeliveryError, string> = {
@@ -281,6 +312,11 @@ export function App() {
     <div class="card-footer recognition-footer">
       <Show when={feedback()}><p class={`delivery-feedback delivery-feedback--${deliveryState()}`} aria-live="polite">{feedback()}</p></Show>
       <div class="delivery-actions">
+        <label class="auto-send-control" title="Send the latest confirmed text after 1.5 seconds without changes">
+          <input type="checkbox" checked={autoSend()} onChange={(event) => setAutoSendEnabled(event.currentTarget.checked)} />
+          <span class="auto-send-switch" aria-hidden="true" />
+          <span class="auto-send-copy"><strong>Auto-send</strong><small>1.5s idle</small></span>
+        </label>
         <Show when={deliveryState() === "failed"}><button class="retry-button" type="button" onClick={() => sendText(true)} disabled={!extensionOnline()}>Retry</button></Show>
         <button class="send-button" type="button" disabled={!confirmedText().trim() || connection() !== "connected" || !extensionOnline() || deliveryState() === "sending"} onClick={() => sendText(false)}>{deliveryState() === "sending" ? "Sending…" : deliveryState() === "delivered" ? "Send again" : "Send to receiver"}<span aria-hidden="true">↗</span></button>
       </div>
