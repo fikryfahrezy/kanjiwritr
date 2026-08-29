@@ -34,6 +34,7 @@ await Promise.all([
   cp(resolve(source, "manifest.json"), resolve(output, "manifest.json")),
   cp(resolve(source, "popup.html"), resolve(output, "popup.html")),
   cp(resolve(source, "popup.css"), resolve(output, "popup.css")),
+  cp(resolve(source, "icons"), resolve(output, "icons"), { recursive: true }),
 ]);
 
 console.info(`Extension built at ${output}`);
