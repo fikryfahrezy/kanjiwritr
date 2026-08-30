@@ -85,7 +85,7 @@ header small,
 
 .status--online span {
   background: var(--color-success);
-  box-shadow: 0 0 0 4px rgba(var(--color-success-rgb), .12);
+  box-shadow: 0 0 0 4px rgba(var(--color-success-rgb), 0.12);
 }
 
 .status--waiting span,
@@ -107,11 +107,11 @@ header small,
   display: block;
   margin-bottom: 13px;
   padding: 14px;
-  border: 1px solid rgba(var(--color-ink-rgb), .2);
+  border: 1px solid rgba(var(--color-ink-rgb), 0.2);
   background: var(--color-surface);
   font-size: 1.42rem;
   font-weight: 700;
-  letter-spacing: .16em;
+  letter-spacing: 0.16em;
   text-align: center;
 }
 
@@ -124,15 +124,17 @@ button {
   color: var(--color-white);
   background: var(--color-action);
   cursor: pointer;
-  font: .68rem ui-monospace, monospace;
+  font:
+    0.68rem ui-monospace,
+    monospace;
 }
 
 button:disabled {
-  opacity: .45;
+  opacity: 0.45;
 }
 
 .secondary {
-  border: 1px solid rgba(var(--color-ink-rgb), .25);
+  border: 1px solid rgba(var(--color-ink-rgb), 0.25);
   color: var(--color-ink);
   background: transparent;
 }
@@ -144,13 +146,13 @@ button:disabled {
 details {
   margin-top: 18px;
   padding-top: 13px;
-  border-top: 1px solid rgba(var(--color-ink-rgb), .13);
+  border-top: 1px solid rgba(var(--color-ink-rgb), 0.13);
 }
 
 summary,
 label {
   color: var(--color-text-secondary);
-  font-size: .64rem;
+  font-size: 0.64rem;
   cursor: pointer;
 }
 
@@ -163,9 +165,11 @@ input {
   width: 100%;
   margin-top: 7px;
   padding: 9px;
-  border: 1px solid rgba(var(--color-ink-rgb), .2);
+  border: 1px solid rgba(var(--color-ink-rgb), 0.2);
   background: var(--color-surface);
-  font: .68rem ui-monospace, monospace;
+  font:
+    0.68rem ui-monospace,
+    monospace;
 }
 
 .feedback {

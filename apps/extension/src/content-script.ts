@@ -5,32 +5,44 @@ let lastEditable: HTMLElement | null = null;
 document.addEventListener("focusin", (event) => {
   if (event.target instanceof HTMLElement && isEditable(event.target)) {
     lastEditable = event.target;
-    void chrome.runtime.sendMessage({ type: "editable.focused" }).catch(() => undefined);
+    void chrome.runtime
+      .sendMessage({ type: "editable.focused" })
+      .catch(() => undefined);
   }
 });
 
 chrome.runtime.onMessage.addListener((message: unknown, _sender, respond) => {
   if (!isInsertMessage(message)) return;
   const active = document.activeElement;
-  const target = active instanceof HTMLElement && isEditable(active) ? active : lastEditable;
+  const target =
+    active instanceof HTMLElement && isEditable(active) ? active : lastEditable;
   respond({ inserted: target ? replaceText(target, message.text) : false });
 });
 
 function isEditable(element: HTMLElement): boolean {
-  if (element instanceof HTMLTextAreaElement) return !element.disabled && !element.readOnly;
+  if (element instanceof HTMLTextAreaElement)
+    return !element.disabled && !element.readOnly;
   if (element instanceof HTMLInputElement) {
-    return !element.disabled && !element.readOnly && ["text", "search", "email", "url", "tel", "password"].includes(element.type);
+    return (
+      !element.disabled &&
+      !element.readOnly &&
+      ["text", "search", "email", "url", "tel", "password"].includes(
+        element.type,
+      )
+    );
   }
   return element.isContentEditable;
 }
 
 function isInsertMessage(value: unknown): value is InsertMessage {
-  return value !== null
-    && typeof value === "object"
-    && "type" in value
-    && value.type === "insert-text"
-    && "text" in value
-    && typeof value.text === "string";
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    "type" in value &&
+    value.type === "insert-text" &&
+    "text" in value &&
+    typeof value.text === "string"
+  );
 }
 
 function replaceText(target: HTMLElement, text: string): boolean {
@@ -43,7 +55,10 @@ function replaceText(target: HTMLElement, text: string): boolean {
   });
   if (!target.dispatchEvent(beforeInput)) return false;
 
-  if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+  if (
+    target instanceof HTMLInputElement ||
+    target instanceof HTMLTextAreaElement
+  ) {
     target.setRangeText(text, 0, target.value.length, "end");
     dispatchReplacementEvents(target, text);
     return true;
@@ -69,10 +84,12 @@ function replaceText(target: HTMLElement, text: string): boolean {
 }
 
 function dispatchReplacementEvents(target: HTMLElement, text: string): void {
-  target.dispatchEvent(new InputEvent("input", {
-    bubbles: true,
-    inputType: "insertReplacementText",
-    data: text,
-  }));
+  target.dispatchEvent(
+    new InputEvent("input", {
+      bubbles: true,
+      inputType: "insertReplacementText",
+      data: text,
+    }),
+  );
   target.dispatchEvent(new Event("change", { bubbles: true }));
 }

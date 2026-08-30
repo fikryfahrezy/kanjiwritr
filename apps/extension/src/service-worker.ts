@@ -1,8 +1,18 @@
-import { encodeClientMessage, parseServerMessage, type DeliveryError } from "@kanjiwritr/protocol";
+import {
+  encodeClientMessage,
+  parseServerMessage,
+  type DeliveryError,
+} from "@kanjiwritr/protocol";
 
 declare const __KANJIWRITR_DEFAULT_SERVER_URL__: string;
 
-type ExtensionConnectionState = "not-paired" | "waiting" | "connecting" | "online" | "reconnecting" | "error";
+type ExtensionConnectionState =
+  | "not-paired"
+  | "waiting"
+  | "connecting"
+  | "online"
+  | "reconnecting"
+  | "error";
 
 interface ExtensionState {
   serverUrl: string;
@@ -13,7 +23,9 @@ interface ExtensionState {
   lastError?: string;
 }
 
-type StatePatch = { [Key in keyof ExtensionState]?: ExtensionState[Key] | undefined };
+type StatePatch = {
+  [Key in keyof ExtensionState]?: ExtensionState[Key] | undefined;
+};
 
 interface FocusedFrame {
   tabId: number;
@@ -37,7 +49,10 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 chrome.runtime.onStartup.addListener(() => void restoreConnection());
 chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name === "keep-connected" && (!socket || socket.readyState > WebSocket.OPEN)) {
+  if (
+    alarm.name === "keep-connected" &&
+    (!socket || socket.readyState > WebSocket.OPEN)
+  ) {
     void restoreConnection();
   }
 });
@@ -45,16 +60,25 @@ void chrome.alarms.create("keep-connected", { periodInMinutes: 0.5 });
 
 chrome.runtime.onMessage.addListener((message: unknown, sender, respond) => {
   if (isFocusMessage(message) && sender.tab?.id !== undefined) {
-    focusedFrame = { tabId: sender.tab.id, frameId: sender.frameId ?? 0, focusedAt: Date.now() };
+    focusedFrame = {
+      tabId: sender.tab.id,
+      frameId: sender.frameId ?? 0,
+      focusedAt: Date.now(),
+    };
     return;
   }
   if (!isPopupMessage(message)) return;
   void handlePopupMessage(message)
     .then((value) => respond({ ok: true, value }))
-    .catch((cause: unknown) => respond({
-      ok: false,
-      error: cause instanceof Error ? cause.message : "Unexpected extension error.",
-    }));
+    .catch((cause: unknown) =>
+      respond({
+        ok: false,
+        error:
+          cause instanceof Error
+            ? cause.message
+            : "Unexpected extension error.",
+      }),
+    );
   return true;
 });
 
@@ -77,9 +101,22 @@ async function requestPairing(): Promise<ExtensionState> {
     headers: { "content-type": "application/json" },
     body: "{}",
   });
-  if (!response.ok) throw new Error(response.status === 429 ? "Too many pairing attempts. Try again later." : "Could not request a pairing code.");
-  const result = await response.json() as { code?: unknown; token?: unknown; expiresAt?: unknown };
-  if (typeof result.code !== "string" || typeof result.token !== "string" || typeof result.expiresAt !== "string") {
+  if (!response.ok)
+    throw new Error(
+      response.status === 429
+        ? "Too many pairing attempts. Try again later."
+        : "Could not request a pairing code.",
+    );
+  const result = (await response.json()) as {
+    code?: unknown;
+    token?: unknown;
+    expiresAt?: unknown;
+  };
+  if (
+    typeof result.code !== "string" ||
+    typeof result.token !== "string" ||
+    typeof result.expiresAt !== "string"
+  ) {
     throw new Error("The server returned an invalid pairing response.");
   }
   const next: ExtensionState = {
@@ -98,7 +135,8 @@ async function saveServer(rawUrl: string): Promise<ExtensionState> {
   const serverUrl = normalizeServerUrl(rawUrl);
   const previous = await getState();
   closeSocket();
-  if (previous.token && previous.serverUrl !== serverUrl) await revokeRemote(previous).catch(() => undefined);
+  if (previous.token && previous.serverUrl !== serverUrl)
+    await revokeRemote(previous).catch(() => undefined);
   const next: ExtensionState = { serverUrl, connectionState: "not-paired" };
   await replaceState(next);
   return next;
@@ -108,7 +146,10 @@ async function unpair(): Promise<void> {
   const state = await getState();
   closeSocket();
   await revokeRemote(state).catch(() => undefined);
-  await replaceState({ serverUrl: state.serverUrl, connectionState: "not-paired" });
+  await replaceState({
+    serverUrl: state.serverUrl,
+    connectionState: "not-paired",
+  });
 }
 
 async function revokeRemote(state: ExtensionState): Promise<void> {
@@ -122,7 +163,10 @@ async function revokeRemote(state: ExtensionState): Promise<void> {
 async function restoreConnection(): Promise<void> {
   const state = await getState();
   if (!state.token) return;
-  if (state.pairingExpiresAt && Date.parse(state.pairingExpiresAt) <= Date.now()) {
+  if (
+    state.pairingExpiresAt &&
+    Date.parse(state.pairingExpiresAt) <= Date.now()
+  ) {
     closeSocket();
     await revokeRemote(state).catch(() => undefined);
     await replaceState({
@@ -140,13 +184,23 @@ function connect(state: ExtensionState): void {
   const url = new URL("/ws", state.serverUrl);
   url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
   url.searchParams.set("token", state.token ?? "");
-  void updateState({ connectionState: reconnectAttempt > 0 ? "reconnecting" : state.pairingCode ? "waiting" : "connecting" });
+  void updateState({
+    connectionState:
+      reconnectAttempt > 0
+        ? "reconnecting"
+        : state.pairingCode
+          ? "waiting"
+          : "connecting",
+  });
   const connection = new WebSocket(url);
   socket = connection;
   connection.addEventListener("open", () => {
     if (socket !== connection) return;
     reconnectAttempt = 0;
-    void updateState({ connectionState: state.pairingCode ? "waiting" : "online", lastError: undefined });
+    void updateState({
+      connectionState: state.pairingCode ? "waiting" : "online",
+      lastError: undefined,
+    });
     heartbeat = setInterval(() => {
       if (socket === connection && connection.readyState === WebSocket.OPEN) {
         connection.send(encodeClientMessage({ type: "ping" }));
@@ -161,19 +215,38 @@ function connect(state: ExtensionState): void {
     socket = undefined;
     clearHeartbeat();
     if (event.code === 1008) {
-      void getState().then((current) => replaceState({ serverUrl: current.serverUrl, connectionState: "not-paired", lastError: "Pairing was revoked or expired." }));
+      void getState().then((current) =>
+        replaceState({
+          serverUrl: current.serverUrl,
+          connectionState: "not-paired",
+          lastError: "Pairing was revoked or expired.",
+        }),
+      );
       return;
     }
     reconnectAttempt += 1;
-    void updateState({ connectionState: "reconnecting", lastError: "Connection lost. Reconnecting…" });
-    reconnectTimer = setTimeout(() => void restoreConnection(), Math.min(30_000, 1_000 * 2 ** Math.min(reconnectAttempt, 5)));
+    void updateState({
+      connectionState: "reconnecting",
+      lastError: "Connection lost. Reconnecting…",
+    });
+    reconnectTimer = setTimeout(
+      () => void restoreConnection(),
+      Math.min(30_000, 1_000 * 2 ** Math.min(reconnectAttempt, 5)),
+    );
   });
   connection.addEventListener("error", () => {
-    if (socket === connection) void updateState({ connectionState: "error", lastError: "Cannot reach the Kanjiwritr server." });
+    if (socket === connection)
+      void updateState({
+        connectionState: "error",
+        lastError: "Cannot reach the Kanjiwritr server.",
+      });
   });
 }
 
-async function handleServerMessage(connection: WebSocket, value: unknown): Promise<void> {
+async function handleServerMessage(
+  connection: WebSocket,
+  value: unknown,
+): Promise<void> {
   const message = parseServerMessage(value);
   if (!message) return;
   if (message.type === "connection.ready") {
@@ -184,13 +257,16 @@ async function handleServerMessage(connection: WebSocket, value: unknown): Promi
       await replaceState({
         serverUrl: state.serverUrl,
         connectionState: "not-paired",
-        lastError: "The previous pairing code is unavailable. Request a new one.",
+        lastError:
+          "The previous pairing code is unavailable. Request a new one.",
       });
       return;
     }
     await updateState({
       connectionState: message.paired ? "online" : "waiting",
-      ...(message.paired ? { pairingCode: undefined, pairingExpiresAt: undefined } : {}),
+      ...(message.paired
+        ? { pairingCode: undefined, pairingExpiresAt: undefined }
+        : {}),
     });
     return;
   }
@@ -206,43 +282,69 @@ async function handleServerMessage(connection: WebSocket, value: unknown): Promi
   if (message.type !== "text.delivery") return;
   if (await wasDelivered(message.messageId)) {
     if (socket === connection && connection.readyState === WebSocket.OPEN) {
-      connection.send(encodeClientMessage({ type: "delivery.ack", messageId: message.messageId, delivered: true }));
+      connection.send(
+        encodeClientMessage({
+          type: "delivery.ack",
+          messageId: message.messageId,
+          delivered: true,
+        }),
+      );
     }
     return;
   }
   const result = await insertIntoFocusedPage(message.text);
   if (result.delivered) await rememberDelivered(message.messageId);
   if (socket === connection && connection.readyState === WebSocket.OPEN) {
-    connection.send(encodeClientMessage({
-      type: "delivery.ack",
-      messageId: message.messageId,
-      delivered: result.delivered,
-      ...(result.error ? { error: result.error } : {}),
-    }));
+    connection.send(
+      encodeClientMessage({
+        type: "delivery.ack",
+        messageId: message.messageId,
+        delivered: result.delivered,
+        ...(result.error ? { error: result.error } : {}),
+      }),
+    );
   }
 }
 
 async function wasDelivered(messageId: string): Promise<boolean> {
   const stored = await chrome.storage.local.get("deliveredMessageIds");
-  return Array.isArray(stored.deliveredMessageIds) && stored.deliveredMessageIds.includes(messageId);
+  return (
+    Array.isArray(stored.deliveredMessageIds) &&
+    stored.deliveredMessageIds.includes(messageId)
+  );
 }
 
 async function rememberDelivered(messageId: string): Promise<void> {
   const stored = await chrome.storage.local.get("deliveredMessageIds");
   const ids = Array.isArray(stored.deliveredMessageIds)
-    ? stored.deliveredMessageIds.filter((value): value is string => typeof value === "string")
+    ? stored.deliveredMessageIds.filter(
+        (value): value is string => typeof value === "string",
+      )
     : [];
-  await chrome.storage.local.set({ deliveredMessageIds: [...ids.slice(-99), messageId] });
+  await chrome.storage.local.set({
+    deliveredMessageIds: [...ids.slice(-99), messageId],
+  });
 }
 
-async function insertIntoFocusedPage(text: string): Promise<{ delivered: boolean; error?: DeliveryError }> {
-  const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+async function insertIntoFocusedPage(
+  text: string,
+): Promise<{ delivered: boolean; error?: DeliveryError }> {
+  const [activeTab] = await chrome.tabs.query({
+    active: true,
+    currentWindow: true,
+  });
   if (!activeTab?.id) return { delivered: false, error: "no_focused_field" };
-  const destination = focusedFrame?.tabId === activeTab.id && Date.now() - focusedFrame.focusedAt < 30 * 60_000
-    ? { frameId: focusedFrame.frameId }
-    : undefined;
+  const destination =
+    focusedFrame?.tabId === activeTab.id &&
+    Date.now() - focusedFrame.focusedAt < 30 * 60_000
+      ? { frameId: focusedFrame.frameId }
+      : undefined;
   try {
-    const response = await chrome.tabs.sendMessage(activeTab.id, { type: "insert-text", text }, destination);
+    const response = await chrome.tabs.sendMessage(
+      activeTab.id,
+      { type: "insert-text", text },
+      destination,
+    );
     return response?.inserted
       ? { delivered: true }
       : { delivered: false, error: "no_focused_field" };
@@ -271,23 +373,28 @@ async function getState(): Promise<ExtensionState> {
 }
 
 async function updateState(patch: StatePatch): Promise<void> {
-  const state = { ...await getState(), ...patch };
+  const state = { ...(await getState()), ...patch };
   for (const key of Object.keys(patch) as (keyof ExtensionState)[]) {
     if (patch[key] === undefined) delete state[key];
   }
   await chrome.storage.local.set(state);
-  await chrome.runtime.sendMessage({ type: "state.changed", state }).catch(() => undefined);
+  await chrome.runtime
+    .sendMessage({ type: "state.changed", state })
+    .catch(() => undefined);
 }
 
 async function replaceState(state: ExtensionState): Promise<void> {
   await chrome.storage.local.clear();
   await chrome.storage.local.set(state);
-  await chrome.runtime.sendMessage({ type: "state.changed", state }).catch(() => undefined);
+  await chrome.runtime
+    .sendMessage({ type: "state.changed", state })
+    .catch(() => undefined);
 }
 
 function normalizeServerUrl(value: string): string {
   const url = new URL(value.trim());
-  if (url.protocol !== "http:" && url.protocol !== "https:") throw new Error("Use an http:// or https:// server URL.");
+  if (url.protocol !== "http:" && url.protocol !== "https:")
+    throw new Error("Use an http:// or https:// server URL.");
   url.pathname = url.pathname.replace(/\/+$/, "");
   url.search = "";
   url.hash = "";
@@ -302,10 +409,24 @@ type PopupMessage =
 
 function isPopupMessage(value: unknown): value is PopupMessage {
   if (!value || typeof value !== "object" || !("type" in value)) return false;
-  if (value.type === "state.get" || value.type === "pairing.request" || value.type === "pairing.unpair") return true;
-  return value.type === "server.save" && "serverUrl" in value && typeof value.serverUrl === "string";
+  if (
+    value.type === "state.get" ||
+    value.type === "pairing.request" ||
+    value.type === "pairing.unpair"
+  )
+    return true;
+  return (
+    value.type === "server.save" &&
+    "serverUrl" in value &&
+    typeof value.serverUrl === "string"
+  );
 }
 
 function isFocusMessage(value: unknown): value is { type: "editable.focused" } {
-  return !!value && typeof value === "object" && "type" in value && value.type === "editable.focused";
+  return (
+    !!value &&
+    typeof value === "object" &&
+    "type" in value &&
+    value.type === "editable.focused"
+  );
 }

@@ -1,5 +1,11 @@
 import { createEffect, onCleanup, onMount } from "solid-js";
-import type { InkBounds, InkPoint, InkStroke, PointerKind, WritingTool } from "./ink-types";
+import type {
+  InkBounds,
+  InkPoint,
+  InkStroke,
+  PointerKind,
+  WritingTool,
+} from "./ink-types";
 import { WRITING_CELL_SIZE } from "./segmentation";
 
 interface WritingCanvasProps {
@@ -37,7 +43,11 @@ export function WritingCanvas(props: WritingCanvasProps) {
   onCleanup(() => observer?.disconnect());
 
   const pointerDown = (event: PointerEvent) => {
-    if (activePointer !== undefined || (event.pointerType === "mouse" && event.button !== 0)) return;
+    if (
+      activePointer !== undefined ||
+      (event.pointerType === "mouse" && event.button !== 0)
+    )
+      return;
     event.preventDefault();
     canvas.setPointerCapture(event.pointerId);
     activePointer = event.pointerId;
@@ -62,7 +72,8 @@ export function WritingCanvas(props: WritingCanvasProps) {
     if (event.pointerId !== activePointer) return;
     event.preventDefault();
     if (props.tool === "eraser") {
-      for (const sample of event.getCoalescedEvents?.() ?? [event]) eraseAt(sample);
+      for (const sample of event.getCoalescedEvents?.() ?? [event])
+        eraseAt(sample);
       return;
     }
     if (!activeStroke) return;
@@ -77,19 +88,29 @@ export function WritingCanvas(props: WritingCanvasProps) {
   const pointerUp = (event: PointerEvent) => {
     if (event.pointerId !== activePointer) return;
     event.preventDefault();
-    if (activeStroke) activeStroke.endedAt = performance.timeOrigin + event.timeStamp;
+    if (activeStroke)
+      activeStroke.endedAt = performance.timeOrigin + event.timeStamp;
     activePointer = undefined;
     activeStroke = undefined;
-    if (!sameStrokes(beforeGesture, working)) props.onCommit(beforeGesture, structuredClone(working));
+    if (!sameStrokes(beforeGesture, working))
+      props.onCommit(beforeGesture, structuredClone(working));
   };
 
   function eraseAt(event: PointerEvent): void {
-    const x = clamp((event.clientX - canvas.getBoundingClientRect().left) / width);
-    const y = clamp((event.clientY - canvas.getBoundingClientRect().top) / height);
+    const x = clamp(
+      (event.clientX - canvas.getBoundingClientRect().left) / width,
+    );
+    const y = clamp(
+      (event.clientY - canvas.getBoundingClientRect().top) / height,
+    );
     const radius = 24;
-    const next = working.filter((stroke) => !stroke.points.some((point) => (
-      Math.hypot((point.x - x) * width, (point.y - y) * height) <= radius
-    )));
+    const next = working.filter(
+      (stroke) =>
+        !stroke.points.some(
+          (point) =>
+            Math.hypot((point.x - x) * width, (point.y - y) * height) <= radius,
+        ),
+    );
     if (next.length !== working.length) {
       working = next;
       redraw();
@@ -101,7 +122,12 @@ export function WritingCanvas(props: WritingCanvasProps) {
     return {
       x: clamp((event.clientX - rect.left) / Math.max(1, rect.width)),
       y: clamp((event.clientY - rect.top) / Math.max(1, rect.height)),
-      pressure: event.pressure > 0 ? event.pressure : event.pointerType === "mouse" ? 0.5 : 0.35,
+      pressure:
+        event.pressure > 0
+          ? event.pressure
+          : event.pointerType === "mouse"
+            ? 0.5
+            : 0.35,
       time: performance.timeOrigin + event.timeStamp,
     };
   }
@@ -157,7 +183,10 @@ export function WritingCanvas(props: WritingCanvasProps) {
     target.restore();
   }
 
-  function drawStroke(target: CanvasRenderingContext2D, stroke: InkStroke): void {
+  function drawStroke(
+    target: CanvasRenderingContext2D,
+    stroke: InkStroke,
+  ): void {
     if (stroke.points.length === 0) return;
     target.save();
     target.strokeStyle = "#202b28";
@@ -168,7 +197,13 @@ export function WritingCanvas(props: WritingCanvasProps) {
       const point = stroke.points[0];
       if (!point) return;
       target.beginPath();
-      target.arc(point.x * width, point.y * height, 2.5 + point.pressure * 3, 0, Math.PI * 2);
+      target.arc(
+        point.x * width,
+        point.y * height,
+        2.5 + point.pressure * 3,
+        0,
+        Math.PI * 2,
+      );
       target.fill();
     } else {
       for (let index = 1; index < stroke.points.length; index += 1) {
@@ -220,5 +255,8 @@ function includePoint(bounds: InkBounds, point: InkPoint): InkBounds {
 }
 
 function sameStrokes(left: InkStroke[], right: InkStroke[]): boolean {
-  return left.length === right.length && left.every((stroke, index) => stroke.id === right[index]?.id);
+  return (
+    left.length === right.length &&
+    left.every((stroke, index) => stroke.id === right[index]?.id)
+  );
 }

@@ -8,5 +8,7 @@ if (!root) throw new Error("Application root was not found.");
 render(() => <App />, root);
 
 if ("serviceWorker" in navigator) {
-  void navigator.serviceWorker.register("/model-cache-worker.js").catch(() => undefined);
+  void navigator.serviceWorker
+    .register("/model-cache-worker.js")
+    .catch(() => undefined);
 }

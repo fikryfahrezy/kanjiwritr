@@ -9,22 +9,38 @@
   </head>
   <body>
     <main>
-      <header><span class="mark">書</span><div><strong>Kanjiwritr</strong><small>Browser text receiver</small></div></header>
+      <header>
+        <span class="mark">書</span>
+        <div>
+          <strong>Kanjiwritr</strong><small>Browser text receiver</small>
+        </div>
+      </header>
       <p id="status" class="status" role="status"><span></span> Loading…</p>
 
       <section id="pairing" hidden>
-        <p class="hint">Enter this one-time code on your writing device. It expires after 10 minutes.</p>
+        <p class="hint">
+          Enter this one-time code on your writing device. It expires after 10
+          minutes.
+        </p>
         <output id="code" class="code" aria-label="Pairing code"></output>
       </section>
 
       <button id="pair" type="button">Pair a writing device</button>
-      <button id="unpair" class="secondary danger" type="button" hidden>Unpair devices</button>
+      <button id="unpair" class="secondary danger" type="button" hidden>
+        Unpair devices
+      </button>
 
       <details>
         <summary>Server settings</summary>
         <label for="server">Kanjiwritr server</label>
-        <input id="server" type="url" placeholder="https://kanjiwritr.example" />
-        <button id="save-server" class="secondary" type="button">Save server URL</button>
+        <input
+          id="server"
+          type="url"
+          placeholder="https://kanjiwritr.example"
+        />
+        <button id="save-server" class="secondary" type="button">
+          Save server URL
+        </button>
       </details>
       <p id="feedback" class="feedback" aria-live="polite"></p>
     </main>

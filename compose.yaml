@@ -12,7 +12,13 @@ services:
     volumes:
       - kanjiwrittr-data:/app/data
     healthcheck:
-      test: ["CMD", "bun", "-e", "process.exit((await fetch('http://127.0.0.1:3000/healthz')).ok ? 0 : 1)"]
+      test:
+        [
+          "CMD",
+          "bun",
+          "-e",
+          "process.exit((await fetch('http://127.0.0.1:3000/healthz')).ok ? 0 : 1)",
+        ]
       interval: 30s
       timeout: 5s
       retries: 3

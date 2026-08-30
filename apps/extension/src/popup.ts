@@ -3,7 +3,13 @@ interface ExtensionState {
   token?: string;
   pairingCode?: string;
   pairingExpiresAt?: string;
-  connectionState: "not-paired" | "waiting" | "connecting" | "online" | "reconnecting" | "error";
+  connectionState:
+    | "not-paired"
+    | "waiting"
+    | "connecting"
+    | "online"
+    | "reconnecting"
+    | "error";
   lastError?: string;
 }
 
@@ -16,10 +22,20 @@ const server = document.querySelector<HTMLInputElement>("#server");
 const saveServer = document.querySelector<HTMLButtonElement>("#save-server");
 const feedback = document.querySelector<HTMLParagraphElement>("#feedback");
 
-pair?.addEventListener("click", () => void act({ type: "pairing.request" }, "Requesting a secure code…"));
-unpair?.addEventListener("click", () => void act({ type: "pairing.unpair" }, "Revoking paired devices…"));
+pair?.addEventListener(
+  "click",
+  () => void act({ type: "pairing.request" }, "Requesting a secure code…"),
+);
+unpair?.addEventListener(
+  "click",
+  () => void act({ type: "pairing.unpair" }, "Revoking paired devices…"),
+);
 saveServer?.addEventListener("click", () => {
-  if (server) void act({ type: "server.save", serverUrl: server.value }, "Saving server…");
+  if (server)
+    void act(
+      { type: "server.save", serverUrl: server.value },
+      "Saving server…",
+    );
 });
 chrome.runtime.onMessage.addListener((message: unknown) => {
   if (isStateChanged(message)) render(message.state);
@@ -47,13 +63,20 @@ async function act(message: object, progress: string): Promise<void> {
 function render(state: ExtensionState): void {
   if (server) server.value = state.serverUrl;
   if (pairing) pairing.hidden = !state.pairingCode;
-  if (code) code.textContent = state.pairingCode ? `${state.pairingCode.slice(0, 4)} ${state.pairingCode.slice(4)}` : "";
+  if (code)
+    code.textContent = state.pairingCode
+      ? `${state.pairingCode.slice(0, 4)} ${state.pairingCode.slice(4)}`
+      : "";
   if (pair) {
-    const canRequestCode = state.connectionState === "not-paired"
-      || state.connectionState === "error"
-      || (state.connectionState === "waiting" && !state.pairingCode);
+    const canRequestCode =
+      state.connectionState === "not-paired" ||
+      state.connectionState === "error" ||
+      (state.connectionState === "waiting" && !state.pairingCode);
     pair.hidden = !canRequestCode;
-    pair.textContent = state.connectionState === "waiting" ? "Generate a new code" : "Pair a writing device";
+    pair.textContent =
+      state.connectionState === "waiting"
+        ? "Generate a new code"
+        : "Pair a writing device";
   }
   if (unpair) unpair.hidden = !state.token;
   if (feedback) feedback.textContent = state.lastError ?? "";
@@ -67,7 +90,10 @@ function render(state: ExtensionState): void {
     error: "Connection error",
   };
   statusElement.className = `status status--${state.connectionState}`;
-  statusElement.replaceChildren(document.createElement("span"), ` ${labels[state.connectionState]}`);
+  statusElement.replaceChildren(
+    document.createElement("span"),
+    ` ${labels[state.connectionState]}`,
+  );
 }
 
 function setBusy(value: boolean): void {
@@ -80,10 +106,20 @@ function showError(value?: string): void {
   if (feedback) feedback.textContent = value ?? "Unexpected extension error.";
 }
 
-function send(message: object): Promise<{ ok: boolean; value?: unknown; error?: string }> {
+function send(
+  message: object,
+): Promise<{ ok: boolean; value?: unknown; error?: string }> {
   return chrome.runtime.sendMessage(message);
 }
 
-function isStateChanged(value: unknown): value is { type: "state.changed"; state: ExtensionState } {
-  return !!value && typeof value === "object" && "type" in value && value.type === "state.changed" && "state" in value;
+function isStateChanged(
+  value: unknown,
+): value is { type: "state.changed"; state: ExtensionState } {
+  return (
+    !!value &&
+    typeof value === "object" &&
+    "type" in value &&
+    value.type === "state.changed" &&
+    "state" in value
+  );
 }

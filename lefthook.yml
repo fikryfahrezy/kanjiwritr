@@ -1,0 +1,10 @@
+pre-commit:
+  commands:
+    lint:
+      glob: "*.{js,jsx,mjs,cjs,ts,tsx}"
+      run: bunx oxlint --fix --no-error-on-unmatched-pattern {staged_files}
+      stage_fixed: true
+    format:
+      glob: "*.{js,jsx,mjs,cjs,ts,tsx,json,jsonc,json5,yaml,yml,toml,html,css,scss,less,md,mdx,graphql,gql}"
+      run: bunx oxfmt --no-error-on-unmatched-pattern {staged_files}
+      stage_fixed: true

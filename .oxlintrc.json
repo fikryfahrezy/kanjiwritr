@@ -1,0 +1,17 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc"],
+  "categories": {
+    "correctness": "error"
+  },
+  "ignorePatterns": ["apps/web/public/ort/**"],
+  "overrides": [
+    {
+      "files": ["apps/web/src/WritingCanvas.tsx"],
+      "rules": {
+        "no-unassigned-vars": "off",
+        "no-unused-expressions": "off"
+      }
+    }
+  ]
+}

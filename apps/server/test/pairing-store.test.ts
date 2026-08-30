@@ -7,7 +7,8 @@ import { PairingStore } from "../src/pairing-store";
 
 const directories: string[] = [];
 afterEach(() => {
-  for (const directory of directories.splice(0)) rmSync(directory, { recursive: true, force: true });
+  for (const directory of directories.splice(0))
+    rmSync(directory, { recursive: true, force: true });
 });
 
 describe("PairingStore", () => {
@@ -27,7 +28,13 @@ describe("PairingStore", () => {
     expect(store.authenticate(claimed!.token)?.role).toBe("writer");
 
     const database = new Database(path, { readonly: true });
-    const serializedRows = JSON.stringify(database.query("SELECT * FROM pairings JOIN devices ON pairings.id = devices.pairing_id").all());
+    const serializedRows = JSON.stringify(
+      database
+        .query(
+          "SELECT * FROM pairings JOIN devices ON pairings.id = devices.pairing_id",
+        )
+        .all(),
+    );
     expect(serializedRows).not.toContain(requested.code);
     expect(serializedRows).not.toContain(requested.token);
     expect(serializedRows).not.toContain(claimed!.token);
@@ -38,7 +45,10 @@ describe("PairingStore", () => {
   test("revokes both sides of a pairing", () => {
     const directory = mkdtempSync(join(tmpdir(), "kanjiwritr-store-"));
     directories.push(directory);
-    const store = new PairingStore(join(directory, "pairing.sqlite"), "test-only-secret");
+    const store = new PairingStore(
+      join(directory, "pairing.sqlite"),
+      "test-only-secret",
+    );
     const requested = store.createPairing();
     const claimed = store.claimPairing(requested.code)!;
     const pairingId = store.authenticate(requested.token)!.pairingId;
