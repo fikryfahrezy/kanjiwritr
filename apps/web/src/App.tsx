@@ -14,6 +14,7 @@ import {
   type DeliveryError,
 } from "@kanjiwritr/protocol";
 import { WritingCanvas } from "./WritingCanvas";
+import { createId } from "./id";
 import type { InkStroke, RecognitionResult, WritingTool } from "./ink-types";
 import { LocalRecognizer } from "./recognizer";
 import { segmentStrokes } from "./segmentation";
@@ -347,7 +348,7 @@ export function App() {
     const delivery =
       retry && pendingDelivery()
         ? pendingDelivery()!
-        : { messageId: crypto.randomUUID(), text };
+        : { messageId: createId(), text };
     setPendingDelivery(delivery);
     lastSentText = delivery.text;
     setDeliveryState("sending");

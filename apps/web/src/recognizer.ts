@@ -1,4 +1,5 @@
 import type { CharacterGroup, RecognitionResult } from "./ink-types";
+import { createId } from "./id";
 
 interface PendingRecognition {
   resolve: (value: RecognitionResult) => void;
@@ -48,7 +49,7 @@ export class LocalRecognizer {
     width: number,
     height: number,
   ): Promise<RecognitionResult> {
-    const requestId = crypto.randomUUID();
+    const requestId = createId();
     return new Promise((resolve, reject) => {
       this.pending.set(requestId, { resolve, reject });
       this.worker.postMessage({

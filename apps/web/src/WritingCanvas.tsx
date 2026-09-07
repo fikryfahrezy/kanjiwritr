@@ -6,6 +6,7 @@ import type {
   PointerKind,
   WritingTool,
 } from "./ink-types";
+import { createId } from "./id";
 import { WRITING_CELL_SIZE } from "./segmentation";
 
 interface WritingCanvasProps {
@@ -58,7 +59,7 @@ export function WritingCanvas(props: WritingCanvasProps) {
     }
     const point = eventPoint(event);
     activeStroke = {
-      id: crypto.randomUUID(),
+      id: createId(),
       pointer: pointerKind(event.pointerType),
       startedAt: point.time,
       bounds: boundsFor(point),
