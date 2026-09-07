@@ -40,6 +40,12 @@ Rate limits are enabled by default. For unlimited local pairing attempts, set `R
 
 The web build uses two HTML entry points. `apps/web/index.html` contains the complete marketing page for search engines and works without JavaScript; `apps/web/app/index.html` loads the SolidJS application. The production server redirects `/app` to `/app/` and keeps application fallbacks inside that route.
 
+### iPad Safari zoom behavior
+
+The writing app is intended to remain at a fixed page scale so pinch gestures do not interfere with handwriting. Its `/app/` viewport sets `maximum-scale=1` and `user-scalable=no`, but Safari on iPadOS has intentionally ignored those zoom limits since iOS 10 for accessibility. See WebKit's [New Interaction Behaviors in iOS 10](https://webkit.org/blog/7367/new-interaction-behaviors-in-ios-10/#zooming-everywhere).
+
+To account for that behavior, `apps/web/src/main.tsx` cancels multi-touch and Safari gesture events, while `touch-action: manipulation` prevents double-tap zoom. One-finger scrolling and writing input remain enabled. These application-level guards cannot disable Safari's toolbar Page Zoom or the system Accessibility Zoom feature.
+
 ## Build and test
 
 ```sh
