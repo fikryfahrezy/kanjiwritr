@@ -21,6 +21,7 @@
 
 * {
   box-sizing: border-box;
+  border-radius: 0;
 }
 
 body {
@@ -45,7 +46,7 @@ header {
   width: 36px;
   aspect-ratio: 1;
   place-items: center;
-  border-radius: 3px;
+  border-radius: 0;
   color: var(--color-white);
   background: var(--color-primary);
   font-family: serif;
@@ -79,7 +80,7 @@ header small,
   width: 7px;
   height: 7px;
   margin-right: 7px;
-  border-radius: 50%;
+  border-radius: 0;
   background: var(--color-status-idle);
 }
 
@@ -120,7 +121,7 @@ button {
   margin-top: 8px;
   padding: 11px;
   border: 0;
-  border-radius: 2px;
+  border-radius: 0;
   color: var(--color-white);
   background: var(--color-action);
   cursor: pointer;
