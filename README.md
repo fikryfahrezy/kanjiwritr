@@ -36,7 +36,7 @@ The static landing page runs at `http://localhost:5173`, and the writing app is 
 
 The server creates `data/kanjiwritr.sqlite` by default. Set a stable `CREDENTIAL_SECRET` in production so pending one-time pairing codes remain valid across a server restart. Device credentials are stored only as hashes, and delivered text is neither logged nor persisted.
 
-Rate limits are enabled by default. For unlimited local pairing attempts, set `RATE_LIMITS_ENABLED=false` in the root `.env` and restart the development server. Never disable them in production.
+Rate limits are enabled by default. For unlimited local pairing attempts, set `RATE_LIMITS_ENABLED=false` in the root `.env` and restart the development server. Never disable them in production. Pairing issuance, pairing claims, and WebSocket authentication can be configured independently with the `*_RATE_LIMIT_MAX` and `*_RATE_LIMIT_WINDOW_SECONDS` variables documented in `.env.example`.
 
 The web build uses two HTML entry points. `apps/web/index.html` contains the complete marketing page for search engines and works without JavaScript; `apps/web/app/index.html` loads the SolidJS application. The production server redirects `/app` to `/app/` and keeps application fallbacks inside that route.
 
@@ -136,6 +136,8 @@ KANJIWRITR_PORT=8080 docker compose up --build -d
 ```
 
 Copy `.env.example` to `.env`, replace `CREDENTIAL_SECRET` with a long random value, then start Compose. The image runs as the unprivileged `bun` user, includes a `/healthz` health check, and persists SQLite in the `kanjiwritr-data` volume.
+
+When the service is behind Cloudflare, set `TRUST_CLOUDFLARE_PROXY=true` so rate limits use Cloudflare's validated `CF-Connecting-IP` value instead of the proxy connection address. Enable this only when clients cannot bypass Cloudflare and reach the origin directly—for example, use Cloudflare Tunnel or restrict origin ingress to Cloudflare.
 
 ## Handwriting recognition
 

@@ -9,6 +9,8 @@ import {
 } from "@kanjiwritr/protocol";
 import { PairingStore, type AuthenticatedDevice } from "./pairing-store";
 import { RateLimiter } from "./rate-limiter";
+import { clientAddress } from "./client-address";
+import { rateLimitConfig } from "./config";
 
 interface SocketData extends AuthenticatedDevice {
   connectionId: string;
@@ -36,6 +38,16 @@ const credentialSecret =
   process.env.CREDENTIAL_SECRET ?? randomBytes(32).toString("base64url");
 const rateLimitsEnabled =
   process.env.RATE_LIMITS_ENABLED?.toLowerCase() !== "false";
+const trustCloudflareProxy =
+  process.env.TRUST_CLOUDFLARE_PROXY?.toLowerCase() === "true";
+const pairingRateLimit = rateLimitConfig(process.env, "PAIRING", 8, 60 * 60);
+const claimRateLimit = rateLimitConfig(process.env, "CLAIM", 20, 10 * 60);
+const websocketRateLimit = rateLimitConfig(process.env, "WEBSOCKET", 40, 60);
+const longestRateLimitWindowMs = Math.max(
+  pairingRateLimit.windowMs,
+  claimRateLimit.windowMs,
+  websocketRateLimit.windowMs,
+);
 const maximumMessageBytes = 16 * 1024;
 const deliveryTimeoutMs = 15_000;
 
@@ -64,7 +76,11 @@ const server = Bun.serve<SocketData>({
   port,
   async fetch(request, bunServer) {
     const url = new URL(request.url);
-    const clientAddress = bunServer.requestIP(request)?.address ?? "unknown";
+    const sourceAddress = clientAddress(
+      request,
+      bunServer.requestIP(request)?.address,
+      trustCloudflareProxy,
+    );
 
     if (url.pathname === "/healthz") {
       return Response.json(
@@ -80,13 +96,25 @@ const server = Bun.serve<SocketData>({
     }
 
     if (url.pathname === "/api/pairings" && request.method === "POST") {
-      if (!limiter.allow(`pair:${clientAddress}`, 8, 60 * 60_000))
+      if (
+        !limiter.allow(
+          `pair:${sourceAddress}`,
+          pairingRateLimit.maximum,
+          pairingRateLimit.windowMs,
+        )
+      )
         return apiError(429, "rate_limited");
       return apiJson(store.createPairing(), 201);
     }
 
     if (url.pathname === "/api/pairings/claim" && request.method === "POST") {
-      if (!limiter.allow(`claim:${clientAddress}`, 20, 10 * 60_000))
+      if (
+        !limiter.allow(
+          `claim:${sourceAddress}`,
+          claimRateLimit.maximum,
+          claimRateLimit.windowMs,
+        )
+      )
         return apiError(429, "rate_limited");
       const body = await parseSmallJson(request);
       if (!body || typeof body.code !== "string")
@@ -131,7 +159,13 @@ const server = Bun.serve<SocketData>({
       if (request.headers.get("upgrade")?.toLowerCase() !== "websocket") {
         return new Response("WebSocket upgrade required", { status: 426 });
       }
-      if (!limiter.allow(`ws:${clientAddress}`, 40, 60_000))
+      if (
+        !limiter.allow(
+          `ws:${sourceAddress}`,
+          websocketRateLimit.maximum,
+          websocketRateLimit.windowMs,
+        )
+      )
         return apiError(429, "rate_limited");
       const token = url.searchParams.get("token");
       const device = token ? store.authenticate(token) : undefined;
@@ -305,7 +339,7 @@ const cleanupTimer = setInterval(() => {
   for (const [key, result] of completedDeliveries) {
     if (result.expiresAt <= now) completedDeliveries.delete(key);
   }
-  limiter.cleanup(now);
+  limiter.cleanup(now, longestRateLimitWindowMs);
 }, 60_000);
 
 for (const signal of ["SIGINT", "SIGTERM"] as const) {

@@ -18,10 +18,10 @@ export class RateLimiter {
     return true;
   }
 
-  cleanup(now: number): void {
+  cleanup(now: number, retentionMs = 60 * 60_000): void {
     for (const [key, timestamps] of this.entries) {
       const recent = timestamps.filter(
-        (timestamp) => timestamp > now - 60 * 60_000,
+        (timestamp) => timestamp > now - retentionMs,
       );
       if (recent.length === 0) this.entries.delete(key);
       else this.entries.set(key, recent);
