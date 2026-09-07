@@ -22,6 +22,7 @@ export function WritingCanvas(props: WritingCanvasProps) {
   let width = 1;
   let height = 1;
   let activePointer: number | undefined;
+  let activePointerType = "";
   let activeStroke: InkStroke | undefined;
   let beforeGesture: InkStroke[] = [];
   let working: InkStroke[] = [];
@@ -44,14 +45,24 @@ export function WritingCanvas(props: WritingCanvasProps) {
   onCleanup(() => observer?.disconnect());
 
   const pointerDown = (event: PointerEvent) => {
-    if (
-      activePointer !== undefined ||
-      (event.pointerType === "mouse" && event.button !== 0)
-    )
-      return;
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    if (activePointer !== undefined) {
+      if (event.pointerType !== "pen" || activePointerType === "pen") return;
+
+      // A palm touch can arrive just before the Pencil. Discard that gesture
+      // and let the higher-precision pen pointer take ownership of the canvas.
+      if (canvas.hasPointerCapture(activePointer))
+        canvas.releasePointerCapture(activePointer);
+      working = structuredClone(beforeGesture);
+      activePointer = undefined;
+      activePointerType = "";
+      activeStroke = undefined;
+      redraw();
+    }
     event.preventDefault();
     canvas.setPointerCapture(event.pointerId);
     activePointer = event.pointerId;
+    activePointerType = event.pointerType;
     beforeGesture = structuredClone(working);
     if (props.tool === "eraser") {
       eraseAt(event);
@@ -92,6 +103,7 @@ export function WritingCanvas(props: WritingCanvasProps) {
     if (activeStroke)
       activeStroke.endedAt = performance.timeOrigin + event.timeStamp;
     activePointer = undefined;
+    activePointerType = "";
     activeStroke = undefined;
     if (!sameStrokes(beforeGesture, working))
       props.onCommit(beforeGesture, structuredClone(working));

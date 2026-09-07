@@ -1285,6 +1285,21 @@ h2 {
   margin: 0;
 }
 
+.workspace--writing,
+.workspace--writing * {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.workspace--writing input,
+.workspace--writing textarea,
+.workspace--writing [contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 .browser-presence {
   flex: 0 0 auto;
   display: inline-flex;
@@ -1390,6 +1405,7 @@ h2 {
   min-width: 0;
   min-height: 0;
   flex-direction: column;
+  touch-action: none;
 }
 
 .canvas-toolbar {
