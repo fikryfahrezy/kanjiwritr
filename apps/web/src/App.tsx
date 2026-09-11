@@ -536,17 +536,25 @@ export function App() {
             when={inputMode() === "write"}
             fallback={
               <section class="typed-fallback">
-                <label>
-                  <span>Japanese text</span>
-                  <textarea
-                    value={confirmedText()}
-                    onInput={(event) =>
-                      setConfirmedText(event.currentTarget.value)
-                    }
-                    lang="ja"
-                    placeholder="ここに日本語を入力してください…"
-                  />
-                </label>
+                <div class="typed-field-heading">
+                  <label for="typed-text">Japanese text</label>
+                  <button
+                    type="button"
+                    disabled={!confirmedText()}
+                    onClick={() => setConfirmedText("")}
+                  >
+                    Clear
+                  </button>
+                </div>
+                <textarea
+                  id="typed-text"
+                  value={confirmedText()}
+                  onInput={(event) =>
+                    setConfirmedText(event.currentTarget.value)
+                  }
+                  lang="ja"
+                  placeholder="ここに日本語を入力してください…"
+                />
                 <DeliveryControls />
               </section>
             }
