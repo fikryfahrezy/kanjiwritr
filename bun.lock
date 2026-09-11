@@ -34,7 +34,7 @@
     },
     "apps/web": {
       "name": "@kanjiwritr/web",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "dependencies": {
         "@kanjiwritr/protocol": "workspace:*",
         "onnxruntime-web": "1.22.0",
