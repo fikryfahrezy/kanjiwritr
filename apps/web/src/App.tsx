@@ -524,7 +524,7 @@ export function App() {
               </button>
             </div>
             <button
-              class="unpair-button"
+              class="danger-text-button unpair-button"
               type="button"
               onClick={() => void unpair()}
             >
@@ -539,6 +539,7 @@ export function App() {
                 <div class="typed-field-heading">
                   <label for="typed-text">Japanese text</label>
                   <button
+                    class="danger-text-button"
                     type="button"
                     disabled={!confirmedText()}
                     onClick={() => setConfirmedText("")}

@@ -1465,13 +1465,15 @@ h2 {
 .typed-field-heading label,
 .confirmation-field > span {
   display: block;
-  margin-bottom: 9px;
   color: var(--color-text-control);
   font-size: 0.65rem;
 }
 
-.typed-field-heading button {
-  margin: -8px 0 1px;
+.confirmation-field > span {
+  margin-bottom: 9px;
+}
+
+.danger-text-button {
   padding: 8px;
   border: 0;
   color: var(--color-text-danger-muted);
@@ -1482,12 +1484,12 @@ h2 {
   text-underline-offset: 3px;
 }
 
-.typed-field-heading button:disabled {
+.danger-text-button:disabled {
   cursor: not-allowed;
   opacity: 0.34;
 }
 
-.typed-field-heading button:focus-visible {
+.danger-text-button:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
@@ -1788,15 +1790,8 @@ h2 {
 
 .unpair-button {
   display: block;
-  margin: 0 8px 0 auto;
-  padding: 8px;
-  border: 0;
-  color: var(--color-text-danger-muted);
-  background: transparent;
-  cursor: pointer;
-  font-size: 0.59rem;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  margin-left: auto;
+  margin-right: 8px;
 }
 
 @media (max-width: 800px) {
